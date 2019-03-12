@@ -469,6 +469,10 @@ rx_setup_err:
 			rte_memzone_free(rxq->rx_mz);
 		if (rxq->sw_ring)
 			rte_free(rxq->sw_ring);
+		if (rxq->st_mode){
+			if (rxq->rx_cmpt_mz)
+				rte_memzone_free(rxq->rx_cmpt_mz);
+		}
 		rte_free(rxq);
 	}
 	return err;
