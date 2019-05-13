@@ -13,9 +13,9 @@ It is a loadable kernel module which has three main components
 	*libqdma* is a library which provides the APIs to manage the functions, queues and mailbox communication.
 	It creates multiple threads per each available core in the x86 system to parallely manage these entities.
 
-	- **main thread**: responsible for accepting the requets from clients and submit the request to HW
-	- **completion status processing thread**: respondible for processing the MM and ST completions
-	- **completion staus pending monitor thread**: responsible for monitoring the completion status pending requests
+	- **main thread**: responsible for accepting the request from clients and submit the request to HW
+	- **completion status processing thread**: responsible for processing the MM and ST completions
+	- **completion status pending monitor thread**: responsible for monitoring the completion status pending requests
 
 	Apart from creating the threads, libqdma also initializes the framework required for handling the legacy interrupts and
 	debugfs framework to collect the debug status information during runtime.
@@ -23,11 +23,11 @@ It is a loadable kernel module which has three main components
 - drv
 	*drv* is a character device created as a wrapper around libqdma to enable the applications to perform read and write operations on the queues.
 	It also manages multiple devices attached to a single Host system.
-	It creates a list of physical devices attached to the Host system and manages the requests comming from
-	appilications to read/write to these devices.
+	It creates a list of physical devices attached to the Host system and manages the requests coming from
+	applications to read/write to these devices.
 
 - xlnx_nl
-	*xlnx_nl* module creates and registers with netlink socket interface to provide various netlink interfcaes to perform device,
+	*xlnx_nl* module creates and registers with netlink socket interface to provide various netlink interfaces to perform device,
 	queue and function related operations
 
 During the module_init, it initializes these 3 main components and creates a PCI device interface i.e. *struct pci_driver*.
@@ -109,9 +109,9 @@ Each PF or VF is initialized when ``probe`` is invoked by Linux kernel upon iden
 #. Identifying the Master PF
 
 	QDMA driver enables the users of the QDMA IP to choose one of the available PFs as master_pf.
-	This is a software only feature and the HW does not have any knowledge on master_pf. HW treates all the PFs as equal.
+	This is a software only feature and the HW does not have any knowledge on master_pf. HW treats all the PFs as equal.
 
-	This PF has the following special software controlled previllages:
+	This PF has the following special software controlled privileges:
 
 	- Programming the global CSR(Control and Status Registers)
 	- Handling the errors reported by HW using a dedicated interrupt vector
@@ -149,20 +149,20 @@ Each PF or VF is initialized when ``probe`` is invoked by Linux kernel upon iden
 
 	QDMA IP user has the flexibility to configure any of the PCI Bars as DMA Bar from Vivado GUI when creating QDMA IP design.
 	To indicate the DMA Bar QDMA IP programs 0x0 register with 0x1FD3 identifier.
-	Driver can find DMA BAR by reading address 0x0 from each BAR and check for (return value & 0xFFFF0000) >> 16 == 0x1fd3 to find DMA BAR
+	Driver can find DMA BAR by reading address 0x0 from each BAR and check for (``return value & 0xFFFF0000) >> 16 == 0x1fd3`` to find DMA BAR
 	By default BAR#0 is considered as DMA Bar by the Driver.
 	If user does not pass the ``config_bar`` module parameter, Driver tries to accessess the PCI Bar#0 and reads the 0x0 register.
 	If it does not have the 1FD3 idenfier, driver will fail to initialize the corresponding PF/VF.
 	If user passes the ``config_bar`` parameter, driver validates the given bar number with HW configured bar number and
 	if they match, the bar will be memory mapped.
 
-	Upon idenfying the DMA Bar, Driver identifies the User Bar using register
+	Upon identifying the DMA Bar, Driver identifies the User Bar using register
 	QDMA_GLBL2_PF_VF_BARLITE_INT((0x10C for PF and 0x1018 for VF) and the remaining bar is marked as bypass bar.
 
 #. Create xdev and add to xdev list
 
 	xdev is a libqdma level bok keeping structure which holds the information required for each function.
-	It is created from pdev and device configration updated according.
+	It is created from pdev and device configuration updated according.
 	Once the xdev is created, it is added to the xdev list to keep track of the multiple functions.
 
 #. Mark the device as online
@@ -186,7 +186,7 @@ Device De-Initialization
 During the driver de-inilization i.e when user performs "rmmmod", all the devices managed by the driver are de-initialized by
 invoking the "remove" handler.
 
-During the device de-initialization, following operations are perfomed
+During the device de-initialization, following operations are performed
 
 - Configuration for all the queues corresponding to the device are cleared
 - The character device interface created for the device is released
@@ -209,7 +209,7 @@ User can set the required number of queues using this sysfs entry.
 
 If the queues in the system needs to be allocated for VFs, master_pf has a sysfs entry ``/sys/bus/pci/devices/<pci_device_bdf>/qdma/qmax_vfs``.
 The queues configured for ``qmax_vfs`` is a pool of queues which will be used to distribute across all available VFs created for this device.
-The remining queues are evenly distibuted across the PFs.
+The remaining queues are evenly distributed across the PFs.
 
 .. image:: /images/set_qmax.PNG
    :align: center
