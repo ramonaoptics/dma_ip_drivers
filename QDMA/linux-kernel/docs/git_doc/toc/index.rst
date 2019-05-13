@@ -1,10 +1,10 @@
 ========================
-Xilinx QDMA Linux Driver 
+Xilinx QDMA Linux Driver
 ========================
 
-Xilinx QDMA Subsystem for PCIe example design is implemented on a Xilinx FPGA, 
-which is connected to an X86 host system through PCI Express. 
-Xilinx QDMA Linux Driver is implemented as a combination of userspace and 
+Xilinx QDMA Subsystem for PCIe example design is implemented on a Xilinx FPGA,
+which is connected to an X86 host system through PCI Express.
+Xilinx QDMA Linux Driver is implemented as a combination of userspace and
 kernel driver components to control and configure the QDMA subsystem.
 
 QDMA Linux Driver consists of the following three major components:
@@ -31,4 +31,3 @@ QDMA Linux Driver consists of the following three major components:
    userguide.rst
    user-app.rst
    performance.rst
-	
