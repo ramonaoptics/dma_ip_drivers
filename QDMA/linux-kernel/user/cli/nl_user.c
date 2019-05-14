@@ -117,7 +117,7 @@ static inline struct xnl_gen_msg *xnl_msg_alloc(int dlen)
 
 int xnl_connect(struct xnl_cb *cb, int vf)
 {
-	int fd;	
+	int fd;
 	struct sockaddr_nl addr;
 	struct xnl_gen_msg *msg = xnl_msg_alloc(XNL_RESP_BUFLEN_MIN);
 	struct xnl_hdr *hdr;
@@ -138,7 +138,7 @@ int xnl_connect(struct xnl_cb *cb, int vf)
         }
 	cb->fd = fd;
 
-	memset(&addr, 0, sizeof(struct sockaddr_nl));	
+	memset(&addr, 0, sizeof(struct sockaddr_nl));
 	addr.nl_family = AF_NETLINK;
 	rv = bind(fd, (struct sockaddr *)&addr, sizeof(struct sockaddr_nl));
 	if (rv < 0) {
@@ -167,7 +167,7 @@ int xnl_connect(struct xnl_cb *cb, int vf)
 	}
         hdr->n.nlmsg_len += NLMSG_ALIGN(attr->nla_len);
 
-	rv = xnl_send(cb, (struct xnl_hdr *)hdr);	
+	rv = xnl_send(cb, (struct xnl_hdr *)hdr);
 	if (rv < 0)
 		goto out;
 
@@ -214,7 +214,7 @@ static int xnl_send_op(struct xnl_cb *cb, int op)
 
 	xnl_msg_set_hdr(&req, cb->family, op);
 
-	rv = xnl_send(cb, &req);	
+	rv = xnl_send(cb, &req);
 
 	return rv;
 }
@@ -236,7 +236,7 @@ static int xnl_msg_add_str_attr(struct xnl_hdr *hdr, enum xnl_attr_t type,
 				char *s)
 {
 	struct nlattr *attr = (struct nlattr *)((char *)hdr + hdr->n.nlmsg_len);
-	int len = strlen(s);	
+	int len = strlen(s);
 
         attr->nla_type = (__u16)type;
         attr->nla_len = len + 1 + NLA_HDRLEN;
@@ -562,7 +562,7 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		break;
 	}
 
-	rv = xnl_send(cb, hdr);	
+	rv = xnl_send(cb, hdr);
 	if (rv < 0)
 		goto out;
 
