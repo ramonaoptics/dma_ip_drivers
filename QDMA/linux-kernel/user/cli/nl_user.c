@@ -327,7 +327,9 @@ static int recv_nl_msg(struct xnl_hdr *hdr, struct xcmd_info *xcmd)
 	unsigned int op = hdr->g.cmd;
 	unsigned int usr_bar;
 
-	recv_attrs(hdr, xcmd);
+	int rv = recv_attrs(hdr, xcmd);
+	if (rv)
+		return rv;
 
 	switch(op) {
 	case XNL_CMD_DEV_LIST:
