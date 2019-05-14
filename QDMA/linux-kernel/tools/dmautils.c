@@ -1444,12 +1444,14 @@ int main(int argc, char *argv[])
 		if (getpid() != base_pid)
 			break;
 	}
-	if ((info = (struct io_info *) shmat(shmid, NULL, 0)) == (struct io_info *) -1) {
+	info = (struct io_info *) shmat(shmid, NULL, 0);
+	if (info == (struct io_info *) -1) {
 		perror("Process shmat returned NULL\n");
 		error(-1, errno, " ");
 		exit(1);
 	}
-	if ((q_lst_stop = (unsigned char *) shmat(q_lst_stop_mid, NULL, 0)) == (unsigned char *) -1) {
+	q_lst_stop = (unsigned char *) shmat(q_lst_stop_mid, NULL, 0);
+	if (q_lst_stop == (unsigned char *) -1) {
 		perror("Process shmat returned NULL\n");
 		error(-1, errno, " ");
 		exit(1);
