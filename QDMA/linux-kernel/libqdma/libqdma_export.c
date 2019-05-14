@@ -798,9 +798,7 @@ int qdma_queue_reconfig(unsigned long dev_hndl, unsigned long id,
 		pr_info("%s invalid state, q_state %d.\n",
 			descq->conf.name, descq->q_state);
 		if (buf && buflen) {
-			int l = strlen(buf);
-
-			l += snprintf(buf + l, buflen - l,
+			snprintf(buf, buflen,
 				"%s invalid state, q_state %d.\n",
 				descq->conf.name, descq->q_state);
 		}
