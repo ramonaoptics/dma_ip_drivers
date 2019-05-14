@@ -583,11 +583,9 @@ int qdma_queue_remove(unsigned long dev_hndl, unsigned long id, char *buf,
 
 	if (descq->q_state != Q_STATE_ENABLED) {
 		if (buf && buflen) {
-			int len = snprintf(buf, buflen,
-					"queue %s, id %u cannot be deleted. Invalid q state\n",
-					descq->conf.name, descq->conf.qidx);
-
-			buf[len] = '\0';
+			snprintf(buf, buflen,
+				"queue %s, id %u cannot be deleted. Invalid q state\n",
+				descq->conf.name, descq->conf.qidx);
 		}
 		return QDMA_ERR_INVALID_DESCQ_STATE;
 
@@ -619,9 +617,8 @@ int qdma_queue_remove(unsigned long dev_hndl, unsigned long id, char *buf,
 		intr_legacy_clear(descq);
 #endif
 	if (buf && buflen) {
-		int len = snprintf(buf, buflen, "queue %s, id %u deleted.\n",
-				descq->conf.name, descq->conf.qidx);
-		buf[len] = '\0';
+		snprintf(buf, buflen, "queue %s, id %u deleted.\n",
+			descq->conf.name, descq->conf.qidx);
 	}
 	pr_debug("queue %s, id %u deleted.\n",
 				descq->conf.name, descq->conf.qidx);
@@ -806,7 +803,6 @@ int qdma_queue_reconfig(unsigned long dev_hndl, unsigned long id,
 			l += snprintf(buf + l, buflen - l,
 				"%s invalid state, q_state %d.\n",
 				descq->conf.name, descq->q_state);
-			buf[l] = '\0';
 		}
 		unlock_descq(descq);
 		return QDMA_ERR_INVALID_DESCQ_STATE;
@@ -1168,7 +1164,6 @@ int qdma_queue_start(unsigned long dev_hndl, unsigned long id,
 			l += snprintf(buf + l, buflen - l,
 				"%s alloc resource failed.\n",
 				descq->conf.name);
-				buf[l] = '\0';
 		}
 		goto free_resource;
 	}
@@ -1184,7 +1179,6 @@ int qdma_queue_start(unsigned long dev_hndl, unsigned long id,
 			l += snprintf(buf + l, buflen,
 				"%s prog. context failed.\n",
 				descq->conf.name);
-			buf[l] = '\0';
 		}
 		goto clear_context;
 	}
