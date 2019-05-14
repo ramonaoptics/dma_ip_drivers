@@ -1440,9 +1440,8 @@ int main(int argc, char *argv[])
 	base_pid = getpid();
 	child_pid_lst[0] = base_pid;
 	for (i = 1; i < num_thrds; i++) {
-		if (getpid() == base_pid)
-			child_pid_lst[i] = fork();
-		else
+		child_pid_lst[i] = fork();
+		if (getpid() != base_pid)
 			break;
 	}
 	if ((info = (struct io_info *) shmat(shmid, NULL, 0)) == (struct io_info *) -1) {
