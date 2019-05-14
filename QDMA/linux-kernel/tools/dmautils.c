@@ -1222,6 +1222,8 @@ static int setup_thrd_env(struct io_info *_info, unsigned char is_new_fd)
 		exit(1);
 	}
 	_info->q_added++;
+	// Make sure that the DMA files have been allocated and are visible
+	usleep(1000);
 
 	/* start queue */
 	printf("%s\n", _info->q_start);
@@ -1230,6 +1232,8 @@ static int setup_thrd_env(struct io_info *_info, unsigned char is_new_fd)
 		exit(1);
 	}
 	_info->q_started++;
+	// Make sure that the DMA files have been allocated and are visible
+	usleep(1000);
 
 	if (is_new_fd) {
 		snprintf(node, 25, "/dev/%s", _info->q_name);
