@@ -857,8 +857,6 @@ int qdma_queue_add(unsigned long dev_hndl, struct qdma_queue_conf *qconf,
 			cur += snprintf(cur, end - cur,
 					"qdma%05x invalid idx %u >= 1.\n",
 					xdev->conf.bdf, qconf->qidx);
-			if (cur >= end)
-				goto handle_truncation;
 		}
 		return rv;
 	}
@@ -872,8 +870,6 @@ int qdma_queue_add(unsigned long dev_hndl, struct qdma_queue_conf *qconf,
 			cur += snprintf(cur, end - cur,
 					"%s, add, qhndl NULL.\n",
 					xdev->conf.name);
-			if (cur >= end)
-				goto handle_truncation;
 		}
 		return rv;
 	}
@@ -897,8 +893,6 @@ int qdma_queue_add(unsigned long dev_hndl, struct qdma_queue_conf *qconf,
 			cur += snprintf(cur, end - cur,
 				"qdma%05x %s mode not enabled.\n",
 				xdev->conf.bdf, qconf->st ? "ST" : "MM");
-			if (cur >= end)
-				goto handle_truncation;
 		}
 		return rv;
 	}
@@ -916,8 +910,6 @@ int qdma_queue_add(unsigned long dev_hndl, struct qdma_queue_conf *qconf,
 			cur += snprintf(cur, end - cur,
 				"qdma%05x invalid idx %u >= %u.\n",
 				xdev->conf.bdf, qconf->qidx, qdev->qmax);
-			if (cur >= end)
-				goto handle_truncation;
 		}
 		return rv;
 	}
@@ -935,8 +927,6 @@ int qdma_queue_add(unsigned long dev_hndl, struct qdma_queue_conf *qconf,
 			cur += snprintf(cur, end - cur,
 					"qdma%05x No free queues %u/%u.\n",
 					xdev->conf.bdf, qcnt, qdev->qmax);
-			if (cur >= end)
-				goto handle_truncation;
 		}
 		return rv;
 	}
@@ -998,8 +988,6 @@ int qdma_queue_add(unsigned long dev_hndl, struct qdma_queue_conf *qconf,
 					"qdma%05x no %s QP, %u.\n",
 					xdev->conf.bdf,
 					qconf->st ? "ST" : "MM", qdev->qmax);
-				if (cur >= end)
-					goto handle_truncation;
 			}
 			goto rewind_qcnt;
 		}
@@ -1017,8 +1005,6 @@ int qdma_queue_add(unsigned long dev_hndl, struct qdma_queue_conf *qconf,
 			if (buf && buflen) {
 				cur += snprintf(cur, end - cur,
 					"Need to have same mode for Q pair.\n");
-				if (cur >= end)
-					goto handle_truncation;
 			}
 			goto rewind_qcnt;
 		}
@@ -1103,8 +1089,6 @@ int qdma_queue_add(unsigned long dev_hndl, struct qdma_queue_conf *qconf,
 	if (buf && buflen) {
 		cur += snprintf(cur, end - cur, "%s %s added.\n",
 			descq->conf.name, qconf->c2h ? "C2H" : "H2C");
-		if (cur >= end)
-			goto handle_truncation;
 	}
 
 	return QDMA_OPERATION_SUCCESSFUL;
@@ -1117,10 +1101,6 @@ rewind_qcnt:
 		qdev->h2c_qcnt--;
 	spin_unlock(&qdev->lock);
 
-	return rv;
-
-handle_truncation:
-	*buf = '\0';
 	return rv;
 }
 
