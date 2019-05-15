@@ -1384,15 +1384,82 @@ static void cleanup(void)
 		printf("No IOs happened\n");
 }
 
+int read_uint_from_file(char * file_name, unsigned int *value){
+	if (!value){
+		return 1;
+	}
+	FILE* file = fopen (file_name, "r");
+	if (!file){
+		return errno;
+	}
+	int rv = fscanf(file, "%u", value);
+	int err_fscanf = errno;
+	int rv2 = fclose(file);
+
+	if (rv == 1){
+		return rv2;
+	} else {
+		return err_fscanf;
+	}
+}
+
+int write_uint_from_file(char * file_name, unsigned int value){
+	if (!value){
+		return 1;
+	}
+	FILE* file = fopen (file_name, "r");
+	if (!file){
+		return errno;
+	}
+	int rv = fprintf(file, "%u\n", value);
+	int err_fprintf = 0;
+	if (rv < 0){
+		err_fprintf = ferror(file);
+	}
+	rv = fclose(file);
+
+	if (err_fprintf){
+		return err_fprintf;
+	} else {
+		return rv;
+	}
+}
+
+int set_aoi_max_nr(unsigned int aio_max_nr){
+	int curr_aio_max_nr;
+	int rv;
+	rv = read_uint_from_file("/proc/sys/fs/aio-max-nr", &curr_aio_max_nr);
+	if (rv != 0){
+		printf("failed reading aio-max-nr\n");
+		return rv;
+	}
+
+	if (curr_aio_max_nr == aio_max_nr){
+		printf("aoi-max-nr is already set to %u, nothing to do.\n", curr_aio_max_nr);
+		return 0;
+	}
+
+	rv = write_uint_from_file("/proc/sys/fs/aio-max-nr", aio_max_nr);
+	// snprintf(aio_max_nr_cmd, 100, "echo %u > /proc/sys/fs/aio-max-nr", aio_max_nr);
+	// rv = system(aio_max_nr_cmd);
+	if (rv != 0){
+		printf("error configuring aio-max-nr\n");
+		printf("Run the command `echo %u > /proc/sys/fs/aio-max-nr` as root.", aio_max_nr);
+		return rv;
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
+	int rv;
 	int cmd_opt;
 	char *cfg_fname = NULL;
 	unsigned int i, j;
 	int s;
 	int last_fd = -1;
 	unsigned int aio_max_nr = 0xFFFFFFFF;
-	char aio_max_nr_cmd[100] = {'\0'};
 	int pid;
 #if THREADS_SET_CPU_AFFINITY
 	cpu_set_t set;
@@ -1417,6 +1484,11 @@ int main(int argc, char *argv[])
 	if (cfg_fname == NULL)
 		return 1;
 
+	rv = set_aoi_max_nr(aio_max_nr);
+	if (rv)
+		return rv;
+
+
 #if THREADS_SET_CPU_AFFINITY
 	num_processors = get_nprocs_conf();
 	CPU_ZERO(&set);
@@ -1428,8 +1500,6 @@ int main(int argc, char *argv[])
 	parse_config_file(cfg_fname);
 	atexit(cleanup);
 
-	snprintf(aio_max_nr_cmd, 100, "echo %u > /proc/sys/fs/aio-max-nr", aio_max_nr);
-	system(aio_max_nr_cmd);
 
 	printf("dmautils(%u) threads\n", num_thrds);
 	child_pid_lst = calloc(num_thrds, sizeof(int));
