@@ -1391,7 +1391,7 @@ int qdma_queue_start(unsigned long dev_hndl, unsigned long id,
 			snprintf(buf, buflen,
 				"%s config failed.\n", descq->conf.name);
 		}
-		goto free_resource;
+		return QDMA_ERR_DESCQ_SETUP_FAILED;
 	}
 	/** allocate the queue resources*/
 	rv = qdma_descq_alloc_resource(descq);
