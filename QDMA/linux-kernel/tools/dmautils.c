@@ -1252,9 +1252,9 @@ static int setup_thrd_env(struct io_info *_info, unsigned char is_new_fd)
 
 static void dump_result(unsigned long long total_io_sz)
 {
-	unsigned long long gig_div = ((unsigned long long)tsecs * 1000000000);
-	unsigned long long meg_div = ((unsigned long long)tsecs * 1000000);
-	unsigned long long kil_div = ((unsigned long long)tsecs * 1000);
+	unsigned long long gig_div = ((unsigned long long)tsecs * 1024 * 1024 * 1024);
+	unsigned long long meg_div = ((unsigned long long)tsecs * 1024 * 1024);
+	unsigned long long kil_div = ((unsigned long long)tsecs * 1024);
 	unsigned long long byt_div = ((unsigned long long)tsecs);
 
 	if ((total_io_sz/gig_div)) {
