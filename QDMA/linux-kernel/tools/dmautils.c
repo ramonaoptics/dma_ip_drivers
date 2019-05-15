@@ -1219,6 +1219,7 @@ static int setup_thrd_env(struct io_info *_info, unsigned char is_new_fd)
 	if (s != 0) {
 		exit(1);
 	}
+	usleep(1000);
 	_info->q_added++;
 
 	/* start queue */
@@ -1227,6 +1228,7 @@ static int setup_thrd_env(struct io_info *_info, unsigned char is_new_fd)
 	if (s != 0) {
 		exit(1);
 	}
+	usleep(1000);
 	_info->q_started++;
 
 	if (is_new_fd) {
