@@ -870,11 +870,9 @@ int qdma_queue_remove(unsigned long dev_hndl, unsigned long id, char *buf,
 
 	if (descq->q_state != Q_STATE_ENABLED) {
 		if (buf && buflen) {
-			int len = snprintf(buf, buflen,
-					"queue %s, id %u cannot be deleted. Invalid q state\n",
-					descq->conf.name, descq->conf.qidx);
-
-			buf[len] = '\0';
+			snprintf(buf, buflen,
+				"queue %s, id %u cannot be deleted. Invalid q state\n",
+				descq->conf.name, descq->conf.qidx);
 		}
 		return QDMA_ERR_INVALID_DESCQ_STATE;
 
@@ -911,9 +909,8 @@ int qdma_queue_remove(unsigned long dev_hndl, unsigned long id, char *buf,
 		intr_legacy_clear(descq);
 #endif
 	if (buf && buflen) {
-		int len = snprintf(buf, buflen, "queue %s, id %u deleted.\n",
-				descq->conf.name, descq->conf.qidx);
-		buf[len] = '\0';
+		snprintf(buf, buflen, "queue %s, id %u deleted.\n",
+			descq->conf.name, descq->conf.qidx);
 	}
 	pr_debug("queue %s, id %u deleted.\n",
 				descq->conf.name, descq->conf.qidx);
@@ -1043,7 +1040,8 @@ int qdma_queue_list(unsigned long dev_hndl, char *buf, int buflen)
 	return cur - buf;
 
 handle_truncation:
-
+	pr_warn("ERR! str truncated. req=%lu, avail=%u", cur - buf, buflen);
+	*buf = '\0';
 	return cur - buf;
 }
 
@@ -1338,6 +1336,7 @@ rewind_qcnt:
 	return rv;
 
 handle_truncation:
+	pr_warn("ERR! str truncated. req=%lu, avail=%u", cur - buf, buflen);
 	*buf = '\0';
 	return rv;
 }
@@ -1375,9 +1374,7 @@ int qdma_queue_start(unsigned long dev_hndl, unsigned long id,
 		pr_info("%s invalid state, q_status%d.\n",
 			descq->conf.name, descq->q_state);
 		if (buf && buflen) {
-			int l = strlen(buf);
-
-			l += snprintf(buf + l, buflen,
+			snprintf(buf, buflen,
 				"%s invalid state, q_state %d.\n",
 				descq->conf.name, descq->q_state);
 		}
@@ -1391,11 +1388,8 @@ int qdma_queue_start(unsigned long dev_hndl, unsigned long id,
 		pr_err("%s 0x%x setup failed.\n",
 			descq->conf.name, descq->qidx_hw);
 		if (buf && buflen) {
-			int l = strlen(buf);
-
-			l += snprintf(buf + l, buflen,
+			snprintf(buf, buflen,
 				"%s config failed.\n", descq->conf.name);
-			buf[l] = '\0';
 		}
 		goto free_resource;
 	}
@@ -1403,12 +1397,9 @@ int qdma_queue_start(unsigned long dev_hndl, unsigned long id,
 	rv = qdma_descq_alloc_resource(descq);
 	if (rv < 0) {
 		if (buf && buflen) {
-			int l = strlen(buf);
-
-			l += snprintf(buf + l, buflen,
+			snprintf(buf, buflen,
 				"%s alloc resource failed.\n",
 				descq->conf.name);
-				buf[l] = '\0';
 		}
 		goto free_resource;
 	}
@@ -1419,12 +1410,9 @@ int qdma_queue_start(unsigned long dev_hndl, unsigned long id,
 		pr_err("%s 0x%x setup failed.\n",
 			descq->conf.name, descq->qidx_hw);
 		if (buf && buflen) {
-			int l = strlen(buf);
-
-			l += snprintf(buf + l, buflen,
+			snprintf(buf, buflen,
 				"%s prog. context failed.\n",
 				descq->conf.name);
-			buf[l] = '\0';
 		}
 		goto clear_context;
 	}
@@ -1495,11 +1483,9 @@ int qdma_queue_prog_stm(unsigned long dev_hndl, unsigned long id,
 		pr_info("%s Skipping STM prog for MM queue.\n",
 			descq->conf.name);
 		if (buf && buflen) {
-			int l = strlen(buf);
-
-			l += snprintf(buf + l, buflen,
-				      "%s Skipping STM prog for MM queue.\n",
-				      descq->conf.name);
+			snprintf(buf, buflen,
+				"%s Skipping STM prog for MM queue.\n",
+				descq->conf.name);
 		}
 		return QDMA_OPERATION_SUCCESSFUL;
 	}
@@ -1508,11 +1494,9 @@ int qdma_queue_prog_stm(unsigned long dev_hndl, unsigned long id,
 		pr_info("%s No STM present; stm_rev %d.\n",
 			descq->conf.name, xdev->stm_rev);
 		if (buf && buflen) {
-			int l = strlen(buf);
-
-			l += snprintf(buf + l, buflen,
-				      "%s No STM present; stm_rev %d.\n",
-				      descq->conf.name, xdev->stm_rev);
+			snprintf(buf, buflen,
+				"%s No STM present; stm_rev %d.\n",
+				descq->conf.name, xdev->stm_rev);
 		}
 		return QDMA_ERR_INVALID_PCI_DEV;
 	}
@@ -1525,11 +1509,9 @@ int qdma_queue_prog_stm(unsigned long dev_hndl, unsigned long id,
 		pr_info("%s invalid state, q_status%d.\n",
 			descq->conf.name, descq->q_state);
 		if (buf && buflen) {
-			int l = strlen(buf);
-
-			l += snprintf(buf + l, buflen,
-				      "%s invalid state, q_state %d.\n",
-				      descq->conf.name, descq->q_state);
+			snprintf(buf, buflen,
+				"%s invalid state, q_state %d.\n",
+				descq->conf.name, descq->q_state);
 		}
 		unlock_descq(descq);
 		return QDMA_ERR_INVALID_DESCQ_STATE;
@@ -1543,12 +1525,10 @@ int qdma_queue_prog_stm(unsigned long dev_hndl, unsigned long id,
 		pr_err("%s 0x%x STM setup failed.\n",
 		       descq->conf.name, descq->qidx_hw);
 		if (buf && buflen) {
-			int l = strlen(buf);
+			snprintf(buf, buflen,
+				"%s prog. STM failed.\n",
+				descq->conf.name);
 
-			l += snprintf(buf + l, buflen,
-				      "%s prog. STM failed.\n",
-				      descq->conf.name);
-			buf[l] = '\0';
 		}
 		return rv;
 	}
