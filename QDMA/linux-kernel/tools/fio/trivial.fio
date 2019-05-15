@@ -1,0 +1,12 @@
+[global]
+allow_file_create=0
+offset=0
+iomem=mmap
+rw=write
+size=1g
+thread=1
+numjobs=4
+filename=qdma01000-MM-0
+directory=/dev
+
+[trivial-readwrite-1g]
