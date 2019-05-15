@@ -529,7 +529,7 @@ static void create_thread_info(void)
 	}
 }
 
-static void parse_config_file(const char *cfg_fname)
+static int parse_config_file(const char *cfg_fname)
 {
 	char *linebuf = NULL;
 	char *realbuf;
@@ -695,11 +695,12 @@ static void parse_config_file(const char *cfg_fname)
 		dir_factor = 2;
 	num_thrds = num_pf * num_q * dir_factor * num_thrds_per_q;
 	create_thread_info();
-	return;
+	return 0;
 	/*dump_thrd_info();
 	exit(1);*/
 prase_cleanup:
 	fclose(fp);
+	return 1;
 }
 
 #define MAX_AIO_EVENTS 65536
@@ -1497,7 +1498,11 @@ int main(int argc, char *argv[])
 	for (i = 0; i < 2*1024; i++)
 		valid_data[i] = i;
 #endif
-	parse_config_file(cfg_fname);
+	rv = parse_config_file(cfg_fname);
+	if (rv){
+		printf("Failed at parsing configuration file.\n");
+		return rv;
+	}
 	atexit(cleanup);
 
 
