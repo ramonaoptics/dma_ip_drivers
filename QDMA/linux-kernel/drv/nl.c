@@ -436,7 +436,6 @@ static char *xnl_mem_alloc(int l, struct genl_info *info)
 	pr_info("xnl OOM %d.\n", l);
 
 	rv = snprintf(ebuf, XNL_ERR_BUFLEN, "ERR! xnl OOM %d.\n", l);
-	ebuf[rv] = '\0';
 
 	xnl_respond_buffer(info, ebuf, XNL_ERR_BUFLEN);
 
@@ -533,12 +532,8 @@ static struct xlnx_qdata *xnl_rcv_check_qidx(struct genl_info *info,
 					qconf->c2h, 1, ebuf, XNL_ERR_BUFLEN);
 
 	if (!qdata) {
-		int l = snprintf(ebuf,
-				XNL_ERR_BUFLEN,
-				"ERR! qidx %u invalid.\n",
-				qconf->qidx);
-
-		ebuf[l] = '\0';
+		snprintf(ebuf, XNL_ERR_BUFLEN,
+			"ERR! qidx %u invalid.\n", qconf->qidx);
 		xnl_respond_buffer(info, ebuf, XNL_ERR_BUFLEN);
 	}
 
@@ -1226,7 +1221,6 @@ static int xnl_q_start(struct sk_buff *skb2, struct genl_info *info)
 
 	if (unlikely(!qdma_get_qmax(xpdev->dev_hndl))) {
 		rv += snprintf(buf, 8, "Zero Qs");
-		buf[rv] = '\0';
 		goto send_resp;
 	}
 	rv = qconf_get(&qconf, info, buf, XNL_RESP_BUFLEN_MIN, &is_qp);
@@ -1315,7 +1309,6 @@ static int xnl_q_stop(struct sk_buff *skb2, struct genl_info *info)
 
 	if (unlikely(!qdma_get_qmax(xpdev->dev_hndl))) {
 		rv += snprintf(buf, 8, "Zero Qs");
-		buf[rv] = '\0';
 		goto send_resp;
 	}
 	rv = qconf_get(&qconf, info, buf, XNL_RESP_BUFLEN_MIN, &is_qp);
@@ -1379,7 +1372,6 @@ static int xnl_q_del(struct sk_buff *skb2, struct genl_info *info)
 
 	if (unlikely(!qdma_get_qmax(xpdev->dev_hndl))) {
 		rv += snprintf(buf, 8, "Zero Qs");
-		buf[rv] = '\0';
 		goto send_resp;
 	}
 	rv = qconf_get(&qconf, info, buf, XNL_RESP_BUFLEN_MIN, &is_qp);
@@ -1573,7 +1565,6 @@ dump_q:
 	rv = snprintf(buf + buf_idx, buf_len - buf_idx,
 		      "Dumped descs of queues %d -> %d.\n",
 		      qidx, i - 1);
-	buf[buf_idx + rv] = '\0';
 send_resp:
 	rv = xnl_respond_buffer(info, buf, buf_len);
 
@@ -1664,7 +1655,6 @@ dump_q:
 		      qidx, i - 1);
 	buf_idx += rv;
 send_resp:
-	buf[buf_idx] = '\0';
 	rv = xnl_respond_buffer(info, buf, buf_len);
 
 	kfree(buf);
