@@ -1042,7 +1042,7 @@ int qdma_queue_list(unsigned long dev_hndl, char *buf, int buflen)
 handle_truncation:
 	pr_warn("ERR! str truncated. req=%lu, avail=%u", cur - buf, buflen);
 	*buf = '\0';
-	return cur - buf;
+	return buf - cur;
 }
 
 /*****************************************************************************/
