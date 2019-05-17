@@ -100,20 +100,6 @@ static int xnl_recv(struct xnl_cb *cb, struct xnl_hdr *hdr, int dlen, int print)
 	return 0;
 }
 
-static inline struct xnl_gen_msg *xnl_msg_alloc(int dlen)
-{
-	struct xnl_gen_msg *msg;
-
-	msg = malloc(sizeof(struct xnl_gen_msg) + dlen);
-	if (!msg) {
-		fprintf(stderr, "%s: OOM, %d.\n", __FUNCTION__, dlen);
-		return NULL;
-	}
-
-	memset(msg, 0, sizeof(struct xnl_gen_msg) + dlen);
-	return msg;
-}
-
 int xnl_connect(struct xnl_cb *cb, int vf)
 {
 	struct nl_sock *sk;
