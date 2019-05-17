@@ -332,7 +332,7 @@ int proc_reg_cmd(struct xcmd_info *xcmd)
 			(1 << XNL_ATTR_PCI_FUNC) | (1 << XNL_ATTR_DEV_CFG_BAR) |
 			(1 << XNL_ATTR_DEV_USR_BAR);
 	unsigned int barno;
-	int32_t v;
+	uint32_t v;
 
 	if ((xcmd->attr_mask & mask) != mask) {
 		fprintf(stderr, "%s: device info missing, 0x%x/0x%x.\n",
@@ -356,18 +356,18 @@ int proc_reg_cmd(struct xcmd_info *xcmd)
 		rv = reg_read_mmap(&xdev, barno, xcmd, &v);
 		if (rv < 0)
 			return -1;
-		fprintf(stdout, "qdma%05x, %02x:%02x.%02x, bar#%u, 0x%x = 0x%x.\n",
+		fprintf(stdout, "qdma%05x, %02x:%02x.%02x, bar#%u, 0x%x = 0x%xu.\n",
 			xcmd->if_bdf, xdev.bus, xdev.dev, xdev.func, barno,
 			regcmd->reg, v);
 		break;
 	case XNL_CMD_REG_WRT:
-		v = reg_write_mmap(&xdev, barno, xcmd);
-		if (v < 0)
+		rv = reg_write_mmap(&xdev, barno, xcmd);
+		if (rv < 0)
 			return -1;
 		rv = reg_read_mmap(&xdev, barno, xcmd, &v);
 		if (rv < 0)
 			return -1;
-		fprintf(stdout, "qdma%05x, %02x:%02x.%02x, bar#%u, reg 0x%x -> 0x%x, read back 0x%x.\n",
+		fprintf(stdout, "qdma%05x, %02x:%02x.%02x, bar#%u, reg 0x%x -> 0x%x, read back 0x%xu.\n",
 			xcmd->if_bdf, xdev.bus, xdev.dev, xdev.func, barno,
 			regcmd->reg, regcmd->val, v);
 		break;
