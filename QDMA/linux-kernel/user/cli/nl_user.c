@@ -123,12 +123,6 @@ fail_socket_alloc:
   return rv;
 }
 
-static inline int xnl_msg_add_int_attr(struct nl_msg *msg, enum xnl_attr_t type,
-				unsigned int v)
-{
-				return nla_put(msg, type, sizeof(__u32), &v);
-}
-
 /** Take the message from the netlink socket, and put the relevant info in xcmd
  *
  *
@@ -274,37 +268,37 @@ static void xnl_msg_add_extra_config_attrs(struct nl_msg *msg,
                                        struct xcmd_info *xcmd)
 {
 	if (xcmd->u.qparm.sflags & (1 << QPARM_RNGSZ_IDX))
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QRNGSZ_IDX,
+		nla_put_u32(msg, XNL_ATTR_QRNGSZ_IDX,
 		                     xcmd->u.qparm.qrngsz_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_C2H_BUFSZ_IDX))
-		xnl_msg_add_int_attr(msg, XNL_ATTR_C2H_BUFSZ_IDX,
+		nla_put_u32(msg, XNL_ATTR_C2H_BUFSZ_IDX,
 		                     xcmd->u.qparm.c2h_bufsz_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPTSZ))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_CMPT_DESC_SIZE,
+		nla_put_u32(msg,  XNL_ATTR_CMPT_DESC_SIZE,
 		                     xcmd->u.qparm.cmpt_entry_size);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_SW_DESC_SZ))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_SW_DESC_SIZE,
+		nla_put_u32(msg,  XNL_ATTR_SW_DESC_SIZE,
 		                     xcmd->u.qparm.sw_desc_sz);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_TMR_IDX))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_CMPT_TIMER_IDX,
+		nla_put_u32(msg,  XNL_ATTR_CMPT_TIMER_IDX,
 		                     xcmd->u.qparm.cmpt_tmr_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_CNTR_IDX))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_CMPT_CNTR_IDX,
+		nla_put_u32(msg,  XNL_ATTR_CMPT_CNTR_IDX,
 		                     xcmd->u.qparm.cmpt_cntr_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_TRIG_MODE))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_CMPT_TRIG_MODE,
+		nla_put_u32(msg,  XNL_ATTR_CMPT_TRIG_MODE,
 		                     xcmd->u.qparm.cmpt_trig_mode);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_GL_MAX))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_PIPE_GL_MAX,
+		nla_put_u32(msg,  XNL_ATTR_PIPE_GL_MAX,
 		                     xcmd->u.qparm.pipe_gl_max);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_FLOW_ID))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_PIPE_FLOW_ID,
+		nla_put_u32(msg,  XNL_ATTR_PIPE_FLOW_ID,
 		                     xcmd->u.qparm.pipe_flow_id);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_SLR_ID))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_PIPE_SLR_ID,
+		nla_put_u32(msg,  XNL_ATTR_PIPE_SLR_ID,
 		                     xcmd->u.qparm.pipe_slr_id);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_TDEST))
-		xnl_msg_add_int_attr(msg,  XNL_ATTR_PIPE_TDEST,
+		nla_put_u32(msg,  XNL_ATTR_PIPE_TDEST,
 		                     xcmd->u.qparm.pipe_tdest);
 }
 
@@ -373,7 +367,7 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		goto out;
 	}
 
-	xnl_msg_add_int_attr(msg, XNL_ATTR_DEV_IDX, xcmd->if_bdf);
+	nla_put_u32(msg, XNL_ATTR_DEV_IDX, xcmd->if_bdf);
 
 	switch(xcmd->op) {
         case XNL_CMD_DEV_LIST:
@@ -384,64 +378,64 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		/* no parameter */
 		break;
         case XNL_CMD_Q_ADD:
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
+		nla_put_u32(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		nla_put_u32(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
+		nla_put_u32(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
 		break;
         case XNL_CMD_Q_START:
         	xnl_msg_add_extra_config_attrs(msg, xcmd);
         case XNL_CMD_Q_STOP:
         case XNL_CMD_Q_DEL:
         case XNL_CMD_Q_DUMP:
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
+		nla_put_u32(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		nla_put_u32(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
+		nla_put_u32(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
 		break;
         case XNL_CMD_Q_DESC:
         case XNL_CMD_Q_CMPT:
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_RANGE_START,
+		nla_put_u32(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		nla_put_u32(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
+		nla_put_u32(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
+		nla_put_u32(msg, XNL_ATTR_RANGE_START,
 					xcmd->u.qparm.range_start);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_RANGE_END,
+		nla_put_u32(msg, XNL_ATTR_RANGE_END,
 					xcmd->u.qparm.range_end);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_RSP_BUF_LEN, dlen);
+		nla_put_u32(msg, XNL_ATTR_RSP_BUF_LEN, dlen);
 		break;
         case XNL_CMD_Q_RX_PKT:
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
+		nla_put_u32(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		nla_put_u32(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
 		/* hard coded to C2H */
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, XNL_F_QDIR_C2H);
+		nla_put_u32(msg, XNL_ATTR_QFLAG, XNL_F_QDIR_C2H);
 		break;
         case XNL_CMD_INTR_RING_DUMP:
-		xnl_msg_add_int_attr(msg, XNL_ATTR_INTR_VECTOR_IDX,
+		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_IDX,
 		                     xcmd->u.intr.vector);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_INTR_VECTOR_START_IDX,
+		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_START_IDX,
 		                     xcmd->u.intr.start_idx);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_INTR_VECTOR_END_IDX,
+		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_END_IDX,
 		                     xcmd->u.intr.end_idx);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_RSP_BUF_LEN, dlen);
+		nla_put_u32(msg, XNL_ATTR_RSP_BUF_LEN, dlen);
 		break;
         case XNL_CMD_REG_RD:
-		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_BAR_NUM,
+		nla_put_u32(msg, XNL_ATTR_REG_BAR_NUM,
     							 xcmd->u.reg.bar);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_ADDR,
+		nla_put_u32(msg, XNL_ATTR_REG_ADDR,
 							 xcmd->u.reg.reg);
 		break;
         case XNL_CMD_REG_WRT:
-		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_BAR_NUM,
+		nla_put_u32(msg, XNL_ATTR_REG_BAR_NUM,
     							 xcmd->u.reg.bar);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_ADDR,
+		nla_put_u32(msg, XNL_ATTR_REG_ADDR,
 							 xcmd->u.reg.reg);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_VAL,
+		nla_put_u32(msg, XNL_ATTR_REG_VAL,
 							 xcmd->u.reg.val);
 		break;
 #ifdef ERR_DEBUG
         case XNL_CMD_Q_ERR_INDUCE:
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
-		xnl_msg_add_int_attr(msg, XNL_ATTR_QPARAM_ERR_INFO,
+		nla_put_u32(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		nla_put_u32(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
+		nla_put_u32(msg, XNL_ATTR_QPARAM_ERR_INFO,
 		                     xcmd->u.qparm.err_info);
 		break;
 #endif
