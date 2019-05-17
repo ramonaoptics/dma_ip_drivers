@@ -56,11 +56,11 @@ void xnl_close(struct xnl_cb *cb)
 static int xnl_send(struct xnl_cb *cb, struct nl_msg * msg)
 {
 	int rv;
-	struct nlmsghdr* nlmsg_hdr 	( 	struct nl_msg *  	n	)
+	struct nlmsghdr* hdr = nlmsg_hdr(msg);
 	// This is a hack for now, we should not have to convert from a
 	// header to message
 	rv = nl_send_auto(cb->sk, msg);
-	if (rv != hdr->n.nlmsg_len) {
+	if (rv != hdr->nlmsg_len) {
 		perror("nl send err");
 		return -1;
 	}
