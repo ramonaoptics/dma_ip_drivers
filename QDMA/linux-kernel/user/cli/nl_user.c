@@ -164,18 +164,10 @@ static void xnl_msg_set_hdr(struct xnl_hdr *hdr, int family, int op)
 	hdr->g.cmd = op;
 }
 
-static int xnl_msg_add_int_attr(struct nl_msg *msg, enum xnl_attr_t type,
+static inline int xnl_msg_add_int_attr(struct nl_msg *msg, enum xnl_attr_t type,
 				unsigned int v)
 {
-				struct nlmsghdr * hdr =  nlmsg_hdr(msg);
-				struct nlattr *attr = (struct nlattr *)((char *)hdr + hdr->nlmsg_len);
-
-        attr->nla_type = (__u16)type;
-        attr->nla_len = sizeof(__u32) + NLA_HDRLEN;
-				*(__u32 *)(attr+ 1) = v;
-
-        hdr->nlmsg_len += NLMSG_ALIGN(attr->nla_len);
-				return 0;
+				return nla_put(msg, type, sizeof(__u32), &v);
 }
 
 static int recv_attrs(struct xnl_hdr *hdr, struct xcmd_info *xcmd)
