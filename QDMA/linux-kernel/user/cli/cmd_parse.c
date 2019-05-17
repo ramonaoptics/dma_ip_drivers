@@ -187,7 +187,7 @@ static void __attribute__((noreturn)) usage(FILE *fp)
 {
 	fprintf(fp, "Usage: %s [dev|qdma[vf]<N>] [operation] \n", progname);
 	fprintf(fp, "\tdev [operation]: system wide FPGA operations\n");
-	fprintf(fp, 
+	fprintf(fp,
 		"\t\tlist                    list all qdma functions\n");
 	fprintf(fp,
 		"\tqdma[N] [operation]: per QDMA FPGA operations\n");
@@ -237,7 +237,7 @@ static void __attribute__((noreturn)) usage(FILE *fp)
 	exit(fp == stderr ? 1 : 0);
 }
 
-static int arg_read_int(char *s, uint32_t *v)
+static int arg_read_uint(char *s, uint32_t *v)
 {
     char *p;
 
@@ -301,12 +301,13 @@ static int parse_ifname(char *name, struct xcmd_info *xcmd)
 		return -EINVAL; \
 	}
 
-static int next_arg_read_int(int argc, char *argv[], int *i, unsigned int *v)
+static int next_arg_read_uint(int argc, char *argv[], int *i, unsigned int *v)
 {
 	get_next_arg(argc, argv, i);
-	return arg_read_int(argv[*i], v);
+	return arg_read_uint(argv[*i], v);
 }
 
+#if 0
 static int next_arg_read_pair(int argc, char *argv[], int *start, char *s,
 			unsigned int *v, int optional)
 {
@@ -328,12 +329,13 @@ static int next_arg_read_pair(int argc, char *argv[], int *start, char *s,
 	if (!strcmp(s, argv[i])) {
 		get_next_arg(argc, argv, &i);
 		*start = i;
-		return arg_read_int(argv[i], v);
+		return arg_read_uint(argv[i], v);
 	}
 
 	warnx("bad parameter, \"%s\".\n", argv[i]);
 	return -EINVAL;
 }
+#endif
 
 static int validate_regcmd(enum xnl_op_t qcmd, struct xcmd_reg	*regcmd)
 {
@@ -400,13 +402,13 @@ static int parse_reg_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 
 		get_next_arg(argc, argv, &i);
 		if (!strcmp(argv[i], "bar")) {
-			rv = next_arg_read_int(argc, argv, &i, &regcmd->bar);
+			rv = next_arg_read_uint(argc, argv, &i, &regcmd->bar);
 			if (rv < 0)
 				return rv;
 			regcmd->sflags |= XCMD_REG_F_BAR_SET;
 			get_next_arg(argc, argv, &i);
 		}
-		rv = arg_read_int(argv[i], &regcmd->reg);
+		rv = arg_read_uint(argv[i], &regcmd->reg);
 		if (rv < 0)
 			return rv;
 		regcmd->sflags |= XCMD_REG_F_REG_SET;
@@ -418,18 +420,18 @@ static int parse_reg_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 
 		get_next_arg(argc, argv, &i);
 		if (!strcmp(argv[i], "bar")) {
-			rv = next_arg_read_int(argc, argv, &i, &regcmd->bar);
+			rv = next_arg_read_uint(argc, argv, &i, &regcmd->bar);
 			if (rv < 0)
 				return rv;
 			regcmd->sflags |= XCMD_REG_F_BAR_SET;
 			get_next_arg(argc, argv, &i);
 		}
-		rv = arg_read_int(argv[i], &xcmd->u.reg.reg);
+		rv = arg_read_uint(argv[i], &xcmd->u.reg.reg);
 		if (rv < 0)
 			return rv;
 		regcmd->sflags |= XCMD_REG_F_REG_SET;
 
-		rv = next_arg_read_int(argc, argv, &i, &xcmd->u.reg.val);
+		rv = next_arg_read_uint(argc, argv, &i, &xcmd->u.reg.val);
 		if (rv < 0)
 			return rv;
 		regcmd->sflags |= XCMD_REG_F_VAL_SET;
@@ -448,12 +450,12 @@ static int read_range(int argc, char *argv[], int i, unsigned int *v1,
 	int rv;
 
 	/* range */
-	rv = arg_read_int(argv[i], v1);
+	rv = arg_read_uint(argv[i], v1);
 	if (rv < 0)
 		return rv;
 
 	get_next_arg(argc, argv, &i);
-	rv = arg_read_int(argv[i], v2);
+	rv = arg_read_uint(argv[i], v2);
 	if (rv < 0)
 		return rv;
 
@@ -691,7 +693,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 		}
 #endif
 		if (!strcmp(argv[i], "idx")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 
@@ -712,7 +714,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 					return -EINVAL;
 				}
 
-				rv = next_arg_read_int(argc, argv, &i, &v1);
+				rv = next_arg_read_uint(argc, argv, &i, &v1);
 				if (rv < 0)
 					return rv;
 
@@ -728,13 +730,13 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 #endif
 
 		} else if (!strcmp(argv[i], "list")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 
 			qparm->idx = v1;
 			f_arg_set |= 1 << QPARM_IDX;
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 
@@ -772,7 +774,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 			i++;
 
 		} else if (!strcmp(argv[i], "idx_bufsz")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 
@@ -782,7 +784,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 			i++;
 
 		} else if (!strcmp(argv[i], "idx_ringsz")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 
@@ -790,7 +792,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 			f_arg_set |= 1 << QPARM_RNGSZ_IDX;
 			i++;
 		} else if (!strcmp(argv[i], "idx_tmr")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 
@@ -798,7 +800,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 			f_arg_set |= 1 << QPARM_CMPT_TMR_IDX;
 			i++;
 		} else if (!strcmp(argv[i], "idx_cntr")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 
@@ -806,7 +808,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 			f_arg_set |= 1 << QPARM_CMPT_CNTR_IDX;
 			i++;
 		} else if (!strcmp(argv[i], "pipe_gl_max")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 			qparm->pipe_gl_max = v1;
@@ -815,21 +817,21 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 
 
 		} else if (!strcmp(argv[i], "pipe_flow_id")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 			qparm->pipe_flow_id = v1;
 			f_arg_set |= 1 << QPARM_PIPE_FLOW_ID;
 			i++;
 		} else if (!strcmp(argv[i], "pipe_slr_id")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 			qparm->pipe_slr_id = v1;
 			f_arg_set |= 1 << QPARM_PIPE_SLR_ID;
 			i++;
 		} else if (!strcmp(argv[i], "pipe_tdest")) {
-			rv = next_arg_read_int(argc, argv, &i, &v1);
+			rv = next_arg_read_uint(argc, argv, &i, &v1);
 			if (rv < 0)
 				return rv;
 			qparm->pipe_tdest = v1;
@@ -1108,17 +1110,17 @@ static int parse_intr_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 
 		get_next_arg(argc, argv, &i);
 		if (!strcmp(argv[i], "vector")) {
-			rv = next_arg_read_int(argc, argv, &i, &intrcmd->vector);
+			rv = next_arg_read_uint(argc, argv, &i, &intrcmd->vector);
 			if (rv < 0)
 				return rv;
 		}
-		rv = next_arg_read_int(argc, argv, &i, &intrcmd->start_idx);
+		rv = next_arg_read_uint(argc, argv, &i, &intrcmd->start_idx);
 		if (rv < 0) {
 			intrcmd->start_idx = 0;
 			intrcmd->end_idx = QDMA_MAX_INT_RING_ENTRIES - 1;
 			goto func_ret;
 		}
-		rv = next_arg_read_int(argc, argv, &i, &intrcmd->end_idx);
+		rv = next_arg_read_uint(argc, argv, &i, &intrcmd->end_idx);
 		if (rv < 0)
 			intrcmd->end_idx = QDMA_MAX_INT_RING_ENTRIES - 1;
 	}
