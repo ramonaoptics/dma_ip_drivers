@@ -48,26 +48,22 @@ struct xnl_gen_msg {
 
 void xnl_close(struct xnl_cb *cb)
 {
-	close(cb->fd);
+	// close(cb->fd);
+	// closed automatically
+	nl_socket_free(cb->sk);
 }
 
-static int xnl_send(struct xnl_cb *cb, struct xnl_hdr *hdr)
+static int xnl_send(struct xnl_cb *cb, struct nl_msg * msg)
 {
 	int rv;
-	struct sockaddr_nl addr = {
-		.nl_family = AF_NETLINK,
-	};
-
-	hdr->n.nlmsg_seq = cb->snd_seq;
-	cb->snd_seq++;
-
-	rv = sendto(cb->fd, (char *)hdr, hdr->n.nlmsg_len, 0,
-			(struct sockaddr *)&addr, sizeof(addr));
-        if (rv != hdr->n.nlmsg_len) {
+	struct nlmsghdr* nlmsg_hdr 	( 	struct nl_msg *  	n	)
+	// This is a hack for now, we should not have to convert from a
+	// header to message
+	rv = nl_send_auto(cb->sk, msg);
+	if (rv != hdr->n.nlmsg_len) {
 		perror("nl send err");
 		return -1;
 	}
-
 	return 0;
 }
 
@@ -168,17 +164,18 @@ static void xnl_msg_set_hdr(struct xnl_hdr *hdr, int family, int op)
 	hdr->g.cmd = op;
 }
 
-static int xnl_msg_add_int_attr(struct xnl_hdr *hdr, enum xnl_attr_t type,
+static int xnl_msg_add_int_attr(struct nl_msg *msg, enum xnl_attr_t type,
 				unsigned int v)
 {
-	struct nlattr *attr = (struct nlattr *)((char *)hdr + hdr->n.nlmsg_len);
+				struct nlmsghdr * hdr =  nlmsg_hdr(msg);
+				struct nlattr *attr = (struct nlattr *)((char *)hdr + hdr->nlmsg_len);
 
         attr->nla_type = (__u16)type;
         attr->nla_len = sizeof(__u32) + NLA_HDRLEN;
-	*(__u32 *)(attr+ 1) = v;
+				*(__u32 *)(attr+ 1) = v;
 
-        hdr->n.nlmsg_len += NLMSG_ALIGN(attr->nla_len);
-	return 0;
+        hdr->nlmsg_len += NLMSG_ALIGN(attr->nla_len);
+				return 0;
 }
 
 static int recv_attrs(struct xnl_hdr *hdr, struct xcmd_info *xcmd)
@@ -316,41 +313,41 @@ static int recv_nl_msg(struct xnl_hdr *hdr, struct xcmd_info *xcmd)
 	return 0;
 }
 
-static void xnl_msg_add_extra_config_attrs(struct xnl_hdr *hdr,
+static void xnl_msg_add_extra_config_attrs(struct nl_msg *msg,
                                        struct xcmd_info *xcmd)
 {
 	if (xcmd->u.qparm.sflags & (1 << QPARM_RNGSZ_IDX))
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QRNGSZ_IDX,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QRNGSZ_IDX,
 		                     xcmd->u.qparm.qrngsz_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_C2H_BUFSZ_IDX))
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_C2H_BUFSZ_IDX,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_C2H_BUFSZ_IDX,
 		                     xcmd->u.qparm.c2h_bufsz_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPTSZ))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_CMPT_DESC_SIZE,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_CMPT_DESC_SIZE,
 		                     xcmd->u.qparm.cmpt_entry_size);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_SW_DESC_SZ))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_SW_DESC_SIZE,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_SW_DESC_SIZE,
 		                     xcmd->u.qparm.sw_desc_sz);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_TMR_IDX))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_CMPT_TIMER_IDX,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_CMPT_TIMER_IDX,
 		                     xcmd->u.qparm.cmpt_tmr_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_CNTR_IDX))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_CMPT_CNTR_IDX,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_CMPT_CNTR_IDX,
 		                     xcmd->u.qparm.cmpt_cntr_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_TRIG_MODE))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_CMPT_TRIG_MODE,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_CMPT_TRIG_MODE,
 		                     xcmd->u.qparm.cmpt_trig_mode);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_GL_MAX))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_PIPE_GL_MAX,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_PIPE_GL_MAX,
 		                     xcmd->u.qparm.pipe_gl_max);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_FLOW_ID))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_PIPE_FLOW_ID,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_PIPE_FLOW_ID,
 		                     xcmd->u.qparm.pipe_flow_id);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_SLR_ID))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_PIPE_SLR_ID,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_PIPE_SLR_ID,
 		                     xcmd->u.qparm.pipe_slr_id);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_TDEST))
-		xnl_msg_add_int_attr(hdr,  XNL_ATTR_PIPE_TDEST,
+		xnl_msg_add_int_attr(msg,  XNL_ATTR_PIPE_TDEST,
 		                     xcmd->u.qparm.pipe_tdest);
 }
 
@@ -392,32 +389,25 @@ static int get_cmd_resp_buf_len(struct xcmd_info *xcmd)
 
 int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 {
-	struct xnl_gen_msg *msg;
-	struct xnl_hdr *hdr;
-	struct nlattr *attr;
+
 	int dlen = get_cmd_resp_buf_len(xcmd);
 	int i;
 	int rv;
 	enum xnl_st_c2h_cmpt_desc_size cmpt_desc_size;
+	struct nl_msg * msg =	nlmsg_alloc();
 
-#if 0
-	printf("%s: op %s, 0x%x, ifname %s.\n", __FUNCTION__,
-		xnl_op_str[xcmd->op], xcmd->op, xcmd->ifname);
-#endif
-
-	msg = xnl_msg_alloc(dlen);
 	if (!msg) {
 		fprintf(stderr, "%s: OOM, %s, op %s,0x%x.\n", __FUNCTION__,
 			xcmd->ifname, xnl_op_str[xcmd->op], xcmd->op);
 		return -ENOMEM;
 	}
 
-	hdr = (struct xnl_hdr *)msg;
-	attr = (struct nlattr *)(msg->data);
+	struct xnl_hdr * hdr =  (struct xnl_hdr *)nlmsg_hdr(msg);
 
-	xnl_msg_set_hdr(hdr, cb->family, xcmd->op);
+	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, cb->family,
+	 						0, 0,  xcmd->op, 0);
 
-	xnl_msg_add_int_attr(hdr, XNL_ATTR_DEV_IDX, xcmd->if_bdf);
+	xnl_msg_add_int_attr(msg, XNL_ATTR_DEV_IDX, xcmd->if_bdf);
 
 	switch(xcmd->op) {
         case XNL_CMD_DEV_LIST:
@@ -428,64 +418,64 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		/* no parameter */
 		break;
         case XNL_CMD_Q_ADD:
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
 		break;
         case XNL_CMD_Q_START:
-        	xnl_msg_add_extra_config_attrs(hdr, xcmd);
+        	xnl_msg_add_extra_config_attrs(msg, xcmd);
         case XNL_CMD_Q_STOP:
         case XNL_CMD_Q_DEL:
         case XNL_CMD_Q_DUMP:
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
 		break;
         case XNL_CMD_Q_DESC:
         case XNL_CMD_Q_CMPT:
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_RANGE_START,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_RANGE_START,
 					xcmd->u.qparm.range_start);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_RANGE_END,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_RANGE_END,
 					xcmd->u.qparm.range_end);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_RSP_BUF_LEN, dlen);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_RSP_BUF_LEN, dlen);
 		break;
         case XNL_CMD_Q_RX_PKT:
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
 		/* hard coded to C2H */
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QFLAG, XNL_F_QDIR_C2H);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, XNL_F_QDIR_C2H);
 		break;
         case XNL_CMD_INTR_RING_DUMP:
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_INTR_VECTOR_IDX,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_INTR_VECTOR_IDX,
 		                     xcmd->u.intr.vector);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_INTR_VECTOR_START_IDX,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_INTR_VECTOR_START_IDX,
 		                     xcmd->u.intr.start_idx);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_INTR_VECTOR_END_IDX,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_INTR_VECTOR_END_IDX,
 		                     xcmd->u.intr.end_idx);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_RSP_BUF_LEN, dlen);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_RSP_BUF_LEN, dlen);
 		break;
         case XNL_CMD_REG_RD:
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_REG_BAR_NUM,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_BAR_NUM,
     							 xcmd->u.reg.bar);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_REG_ADDR,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_ADDR,
 							 xcmd->u.reg.reg);
 		break;
         case XNL_CMD_REG_WRT:
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_REG_BAR_NUM,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_BAR_NUM,
     							 xcmd->u.reg.bar);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_REG_ADDR,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_ADDR,
 							 xcmd->u.reg.reg);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_REG_VAL,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_REG_VAL,
 							 xcmd->u.reg.val);
 		break;
 #ifdef ERR_DEBUG
         case XNL_CMD_Q_ERR_INDUCE:
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
-		xnl_msg_add_int_attr(hdr, XNL_ATTR_QPARAM_ERR_INFO,
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
+		xnl_msg_add_int_attr(msg, XNL_ATTR_QPARAM_ERR_INFO,
 		                     xcmd->u.qparm.err_info);
 		break;
 #endif
@@ -493,7 +483,7 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		break;
 	}
 
-	rv = xnl_send(cb, hdr);
+	rv = xnl_send(cb, msg);
 	if (rv < 0)
 		goto out;
 
@@ -503,6 +493,6 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 
 	rv = recv_nl_msg(hdr, xcmd);
 out:
-	free(msg);
+	nlmsg_free(msg);
 	return rv;
 }
