@@ -353,6 +353,11 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 	int i;
 	int rv;
 	enum xnl_st_c2h_cmpt_desc_size cmpt_desc_size;
+	struct sockaddr_nl addr;
+	addr.nl_family = cb->family;
+	addr.nl_pid = 0; // auto
+	addr.nl_groups = 0; // not used
+
 	struct nl_msg * msg =	genlmsg_alloc_size(dlen);
 
 	if (!msg) {
@@ -360,6 +365,7 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 			xcmd->ifname, xnl_op_str[xcmd->op], xcmd->op);
 		return -ENOMEM;
 	}
+	nlmsg_set_dst(msg, &addr);
 
 	void * ret = genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, cb->family,
 	 						0, 0,  xcmd->op, 0);
