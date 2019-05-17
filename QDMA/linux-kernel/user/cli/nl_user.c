@@ -152,7 +152,6 @@ int xnl_connect(struct xnl_cb *cb, int vf)
 	cb->sk = sk;
 	return 0;
 fail_family_resolve:
-  nl_close(sk);
 fail_nl_connect:
   nl_socket_free(sk);
 fail_socket_alloc:
