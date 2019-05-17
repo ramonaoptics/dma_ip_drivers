@@ -251,7 +251,6 @@ static int arg_read_int(char *s, uint32_t *v)
 
 static int parse_ifname(char *name, struct xcmd_info *xcmd)
 {
-	int rv;
 	int len = strlen(name);
 	int pos, i;
 	uint32_t v;
@@ -311,7 +310,6 @@ static int next_arg_read_int(int argc, char *argv[], int *i, unsigned int *v)
 static int next_arg_read_pair(int argc, char *argv[], int *start, char *s,
 			unsigned int *v, int optional)
 {
-	int rv;
 	int i = *start;
 
 	/* string followed by an int */
@@ -377,8 +375,8 @@ static int parse_reg_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 
 	/*
 	 * reg dump
-	 * reg read [bar <N>] <addr> 
-	 * reg write [bar <N>] <addr> <val> 
+	 * reg read [bar <N>] <addr>
+	 * reg write [bar <N>] <addr> <val>
 	 */
 
 	memset(regcmd, 0, sizeof(struct xcmd_reg));
@@ -611,6 +609,7 @@ static int validate_qcmd(enum xnl_op_t qcmd, struct xcmd_q_parm *qparm)
 				printf("Error: Both desc and cmpt attr cannot be taken for Q DUMP\n");
 				break;
 			}
+			// fall through
 		case XNL_CMD_Q_DESC:
 			print_ignored_params(qparm->sflags &
 					     Q_DUMP_ATTR_IGNORE_MASK, 0);
@@ -657,7 +656,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 			unsigned int f_arg_required)
 {
 	int rv;
-	uint32_t v1, v2;
+	uint32_t v1;
 	unsigned int f_arg_set = 0;;
 	unsigned int mask;
 
@@ -781,7 +780,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 
 			f_arg_set |= 1 << QPARM_C2H_BUFSZ_IDX;
 			i++;
-		
+
 		} else if (!strcmp(argv[i], "idx_ringsz")) {
 			rv = next_arg_read_int(argc, argv, &i, &v1);
 			if (rv < 0)
@@ -937,7 +936,7 @@ static int read_qparm(int argc, char *argv[], int i, struct xcmd_q_parm *qparm,
 		int i;
 		unsigned int bit_mask = 1;
 
-		mask = (mask ^ f_arg_required) & f_arg_required;	
+		mask = (mask ^ f_arg_required) & f_arg_required;
 
 		for (i = 0; i < QPARM_MAX; i++, bit_mask <<= 1) {
 			if (!(bit_mask & f_arg_required))
@@ -1008,7 +1007,7 @@ static int parse_q_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 		qparm->flags |= (XNL_F_CMPL_STATUS_EN | XNL_F_CMPL_STATUS_ACC_EN |
 				XNL_F_CMPL_STATUS_PEND_CHK | XNL_F_CMPL_STATUS_DESC_EN |
 				XNL_F_FETCH_CREDIT);
-		if (qparm->flags & (XNL_F_QDIR_C2H | XNL_F_QMODE_ST) ==
+		if ((qparm->flags & (XNL_F_QDIR_C2H | XNL_F_QMODE_ST)) ==
 				(XNL_F_QDIR_C2H | XNL_F_QMODE_ST)) {
 			if (!(qparm->sflags & (1 << QPARM_CMPTSZ))) {
 					/* default to 8B */
@@ -1046,7 +1045,7 @@ static int parse_q_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 		printf("Error: Unknown q command\n");
 		return -EINVAL;
 	}
-	
+
 	if (rv < 0)
 		return rv;
 	i = rv;
@@ -1073,6 +1072,7 @@ static int parse_q_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 
 static int parse_dev_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 {
+	(void) argc; // unused.
 	if (!strcmp(argv[i], "list")) {
 		xcmd->op = XNL_CMD_DEV_LIST;
 		i++;
@@ -1083,8 +1083,6 @@ static int parse_dev_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 
 static int parse_stat_cmd(int argc, char *argv[], int i, struct xcmd_info *xcmd)
 {
-	int rv;
-
 	xcmd->op = XNL_CMD_DEV_STAT;
 	if (i >= argc)
 		return i;
@@ -1139,7 +1137,7 @@ int parse_cmd(int argc, char *argv[], struct xcmd_info *xcmd)
 
 	progname = argv[0];
 
-	if (argc == 1) 
+	if (argc == 1)
 		usage(stderr);
 
 	if (argc == 2) {
@@ -1192,7 +1190,7 @@ done:
 	if (rv < 0)
 		return rv;
 	i = rv;
-	
+
 	if (i < argc) {
 		warnx("unexpected parameter \"%s\".\n", argv[i]);
 		return -EINVAL;
