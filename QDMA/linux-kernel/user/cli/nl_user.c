@@ -154,16 +154,6 @@ fail_socket_alloc:
   return rv;
 }
 
-static void xnl_msg_set_hdr(struct xnl_hdr *hdr, int family, int op)
-{
-	hdr->n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
-	hdr->n.nlmsg_type = family;
-	hdr->n.nlmsg_flags = NLM_F_REQUEST;
-	hdr->n.nlmsg_pid = getpid();
-
-	hdr->g.cmd = op;
-}
-
 static inline int xnl_msg_add_int_attr(struct nl_msg *msg, enum xnl_attr_t type,
 				unsigned int v)
 {
