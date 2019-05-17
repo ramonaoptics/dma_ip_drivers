@@ -84,7 +84,6 @@ static int xnl_recv(struct xnl_cb *cb, struct nl_msg *msg, int dlen)
 int xnl_connect(struct xnl_cb *cb, int vf)
 {
 	struct nl_sock *sk;
-	int fd;
 	int rv = -1;
 	int fam;
 
@@ -113,7 +112,6 @@ int xnl_connect(struct xnl_cb *cb, int vf)
 	// Xilinx's driver doesn't ack messages.
 	nl_socket_disable_auto_ack(sk);
 	cb->family = fam;
-	cb->fd = nl_socket_get_fd(sk);
 	cb->sk = sk;
 	return 0;
 fail_family_resolve:

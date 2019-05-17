@@ -84,7 +84,6 @@ struct xcmd_intr {
 
 struct xnl_cb {
 	struct nl_sock *sk;
-	int fd;
 	unsigned short family;
 	unsigned int snd_seq;
 	unsigned int rcv_seq;
