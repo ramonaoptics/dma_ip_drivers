@@ -150,7 +150,7 @@ ifeq ($(install_path),)
 	# defaults
 	kernel_install_path ?= $(PREFIX)/lib/modules/$(utsrelease)/updates/kernel/drivers/qdma
 	dev_install_path ?= /usr/local/include/qdma
-	user_install_path ?= /usr/local/sbin
+	user_install_path ?= /usr/local/bin
 	conf_install_path ?= /etc/xilinx-dma
 	udev_install_path ?= /etc/udev/rules.d
 	docs_install_path ?= /usr/share/man/man8
