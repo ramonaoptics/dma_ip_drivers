@@ -110,6 +110,8 @@ int xnl_connect(struct xnl_cb *cb, int vf)
 		goto fail_family_resolve;
 	}
 
+	// Xilinx's driver doesn't ack messages.
+	nl_socket_disable_auto_ack(sk);
 	cb->family = fam;
 	cb->fd = nl_socket_get_fd(sk);
 	cb->sk = sk;
