@@ -12,6 +12,7 @@
 #ifndef __NL_USER_H__
 #define __NL_USER_H__
 
+#include <netlink/genl/ctrl.h>
 #include <stdint.h>
 #ifdef ERR_DEBUG
 #include "qdma_nl.h"
@@ -82,6 +83,7 @@ struct xcmd_intr {
 };
 
 struct xnl_cb {
+	struct nl_sock *sk;
 	int fd;
 	unsigned short family;
 	unsigned int snd_seq;

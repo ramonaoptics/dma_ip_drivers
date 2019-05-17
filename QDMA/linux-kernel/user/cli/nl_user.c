@@ -22,6 +22,9 @@
 #include <linux/genetlink.h>
 #include <qdma_nl.h>
 
+#include <netlink/genl/genl.h>
+#include <netlink/genl/ctrl.h>
+
 #include "nl_user.h"
 #include "cmd_parse.h"
 
@@ -117,82 +120,43 @@ static inline struct xnl_gen_msg *xnl_msg_alloc(int dlen)
 
 int xnl_connect(struct xnl_cb *cb, int vf)
 {
-	int fd;	
-	struct sockaddr_nl addr;
-	struct xnl_gen_msg *msg = xnl_msg_alloc(XNL_RESP_BUFLEN_MIN);
-	struct xnl_hdr *hdr;
-	struct nlattr *attr;
+	struct nl_sock *sk;
+	int fd;
 	int rv = -1;
+	int fam;
 
-	if (!msg) {
-		fprintf(stderr, "%s, msg OOM.\n", __FUNCTION__);
-		return -ENOMEM;
-	}
-	hdr = (struct xnl_hdr *)msg;
-
-	fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_GENERIC);
-	if (fd < 0) {
-                perror("nl socket err");
-		rv = fd;
-		goto out;
-        }
-	cb->fd = fd;
-
-	memset(&addr, 0, sizeof(struct sockaddr_nl));	
-	addr.nl_family = AF_NETLINK;
-	rv = bind(fd, (struct sockaddr *)&addr, sizeof(struct sockaddr_nl));
-	if (rv < 0) {
-		perror("nl bind err");
-		goto out;
+	sk = nl_socket_alloc();
+  if (sk == NULL){
+    fprintf(stderr, "%s, error alocating netlink socket.\n", __FUNCTION__);
+		rv = -ENOMEM;
+    goto fail_socket_alloc;
+  }
+	rv = genl_connect(sk);
+	if (rv != 0){
+		printf("Could not connect to socket\n");
+		goto fail_nl_connect;
 	}
 
-	hdr->n.nlmsg_type = GENL_ID_CTRL;
-	hdr->n.nlmsg_flags = NLM_F_REQUEST;
-	hdr->n.nlmsg_pid = getpid();
-	hdr->n.nlmsg_len = NLMSG_LENGTH(GENL_HDRLEN);
-
-        hdr->g.cmd = CTRL_CMD_GETFAMILY;
-        hdr->g.version = XNL_VERSION;
-
-	attr = (struct nlattr *)(msg->data);
-	attr->nla_type = CTRL_ATTR_FAMILY_NAME;
-
-	if (vf) {
-        	attr->nla_len = strlen(XNL_NAME_VF) + 1 + NLA_HDRLEN;
-        	strcpy((char *)(attr + 1), XNL_NAME_VF);
-
-	} else {
-        	attr->nla_len = strlen(XNL_NAME_PF) + 1 + NLA_HDRLEN;
-        	strcpy((char *)(attr + 1), XNL_NAME_PF);
+	if(vf){
+		fam = genl_ctrl_resolve(sk, XNL_NAME_VF);
+	} else{
+		fam = genl_ctrl_resolve(sk, XNL_NAME_PF);
 	}
-        hdr->n.nlmsg_len += NLMSG_ALIGN(attr->nla_len);
-
-	rv = xnl_send(cb, (struct xnl_hdr *)hdr);	
-	if (rv < 0)
-		goto out;
-
-	rv = xnl_recv(cb, hdr, XNL_RESP_BUFLEN_MIN, 0);
-	if (rv < 0)
-		goto out;
-
-#if 0
-	/* family name */
-        if (attr->nla_type == CTRL_ATTR_FAMILY_NAME)
-		printf("family name: %s.\n", (char *)(attr + 1));
-#endif
-
-	attr = (struct nlattr *)((char *)attr + NLA_ALIGN(attr->nla_len));
-	/* family ID */
-        if (attr->nla_type == CTRL_ATTR_FAMILY_ID) {
-		cb->family = *(__u16 *)(attr + 1);
-//		printf("family id: 0x%x.\n", cb->family);
+	if (fam < 0){
+		printf("Error resolving family name.");
+		goto fail_family_resolve;
 	}
 
-	rv = 0;
-
-out:
-	free(msg);
-	return rv;
+	cb->family = fam;
+	cb->fd = nl_socket_get_fd(sk);
+	cb->sk = sk;
+	return 0;
+fail_family_resolve:
+  nl_close(sk);
+fail_nl_connect:
+  nl_socket_free(sk);
+fail_socket_alloc:
+  return rv;
 }
 
 static void xnl_msg_set_hdr(struct xnl_hdr *hdr, int family, int op)
