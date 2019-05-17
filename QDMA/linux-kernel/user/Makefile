@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-CFLAGS += -g
+CFLAGS += -g $(shell pkg-config --cflags --libs libnl-genl-3.0)
 #CFLAGS += -O2 -fno-inline -Wall -Wstrict-prototypes
 CFLAGS += -I. -I../include
 CFLAGS += $(EXTRA_FLAGS)
@@ -12,7 +12,7 @@ all: clean dmactl
 
 dmactl: $(DMACTL_OBJS)
 	@mkdir -p -m 755 $(build_dir)
-	$(CC) $^ -o $(DMACTL)
+	$(CC) $^ -o $(DMACTL) $(CFLAGS)
 	@cp -f $(DMACTL) $(build_dir)
 
 clean:
