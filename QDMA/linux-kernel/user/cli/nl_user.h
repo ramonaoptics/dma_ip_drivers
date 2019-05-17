@@ -78,8 +78,8 @@ struct xcmd_q_parm {
 
 struct xcmd_intr {
 	unsigned int vector;
-	int start_idx;
-	int end_idx;
+	unsigned int start_idx;
+	unsigned int end_idx;
 };
 
 struct xnl_cb {
