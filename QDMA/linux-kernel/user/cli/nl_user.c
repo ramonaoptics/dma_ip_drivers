@@ -51,7 +51,11 @@ static int xnl_send(struct xnl_cb *cb, struct nl_msg * msg)
 static int xnl_recv(struct xnl_cb *cb, struct nl_msg *msg, int dlen)
 {
 	int rv;
-
+	// I feel like I need to justy the use of such a low level function.
+	// All the other recv functions I found in libnl allocate the
+	// message for you. This is pretty unecessary since we already know
+	// the approximate message size. Therefore, I don't want to use them.
+	// We basically recreated a simple version of this stuff.
 	int fd = nl_socket_get_fd(cb->sk);
 	struct nlmsghdr * hdr = nlmsg_hdr(msg);
 	struct genlmsghdr * gehdr = genlmsg_hdr(hdr);
