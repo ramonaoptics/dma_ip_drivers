@@ -41,7 +41,9 @@ static int xnl_send(struct xnl_cb *cb, struct nl_msg * msg)
 	// This is a hack for now, we should not have to convert from a
 	// header to message
 	rv = nl_send_auto(cb->sk, msg);
-	if (rv != hdr->nlmsg_len) {
+	// casting to int is safe because it is unlikely that the
+	// messages are 4GB
+	if (rv != (int) hdr->nlmsg_len) {
 		perror("nl send err");
 		return -1;
 	}
@@ -69,7 +71,9 @@ static int xnl_recv(struct xnl_cb *cb, struct nl_msg *msg, int dlen)
 		return -1;
 	}
 	/* as long as there is attribute, even if it is shorter than expected */
-	if (!NLMSG_OK(hdr, rv) && (rv <= NLMSG_HDRLEN + NLMSG_LENGTH(GENL_HDRLEN))) {
+	// casting to int is safe due to the fact that these headers have
+	// finite sizes
+	if (!NLMSG_OK(hdr, rv) && (rv <= (int) (NLMSG_HDRLEN + NLMSG_LENGTH(GENL_HDRLEN)))) {
 		fprintf(stderr,
 			"nl recv:, invalid message, cmd 0x%x, %d,%d.\n",
 			gehdr->cmd, dlen, rv);
