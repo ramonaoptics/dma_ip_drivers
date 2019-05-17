@@ -48,14 +48,13 @@ int main(int argc, char *argv[])
 		if (!rv)
 			rv = xnl_send_cmd(&cb, &xcmd);
 		xnl_close(&cb);
-
-		goto close;
+		return 0;
 	}
 
 	/* for all other command, query the target device info first */
 	rv = xnl_connect(&cb, xcmd.vf);
 	if (rv < 0)
-		goto close;
+		return rv;
 
  	op = xcmd.op;
 	xcmd.op = XNL_CMD_DEV_INFO;
