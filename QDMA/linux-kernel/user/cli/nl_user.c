@@ -274,38 +274,27 @@ static void xnl_msg_add_extra_config_attrs(struct nl_msg *msg,
                                        struct xcmd_info *xcmd)
 {
 	if (xcmd->u.qparm.sflags & (1 << QPARM_RNGSZ_IDX))
-		nla_put_u32(msg, XNL_ATTR_QRNGSZ_IDX,
-		                     xcmd->u.qparm.qrngsz_idx);
+		nla_put_u32(msg, XNL_ATTR_QRNGSZ_IDX, xcmd->u.qparm.qrngsz_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_C2H_BUFSZ_IDX))
-		nla_put_u32(msg, XNL_ATTR_C2H_BUFSZ_IDX,
-		                     xcmd->u.qparm.c2h_bufsz_idx);
+		nla_put_u32(msg, XNL_ATTR_C2H_BUFSZ_IDX, xcmd->u.qparm.c2h_bufsz_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPTSZ))
-		nla_put_u32(msg,  XNL_ATTR_CMPT_DESC_SIZE,
-		                     xcmd->u.qparm.cmpt_entry_size);
+		nla_put_u32(msg, XNL_ATTR_CMPT_DESC_SIZE, xcmd->u.qparm.cmpt_entry_size);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_SW_DESC_SZ))
-		nla_put_u32(msg,  XNL_ATTR_SW_DESC_SIZE,
-		                     xcmd->u.qparm.sw_desc_sz);
+		nla_put_u32(msg, XNL_ATTR_SW_DESC_SIZE, xcmd->u.qparm.sw_desc_sz);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_TMR_IDX))
-		nla_put_u32(msg,  XNL_ATTR_CMPT_TIMER_IDX,
-		                     xcmd->u.qparm.cmpt_tmr_idx);
+		nla_put_u32(msg, XNL_ATTR_CMPT_TIMER_IDX, xcmd->u.qparm.cmpt_tmr_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_CNTR_IDX))
-		nla_put_u32(msg,  XNL_ATTR_CMPT_CNTR_IDX,
-		                     xcmd->u.qparm.cmpt_cntr_idx);
+		nla_put_u32(msg, XNL_ATTR_CMPT_CNTR_IDX, xcmd->u.qparm.cmpt_cntr_idx);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_CMPT_TRIG_MODE))
-		nla_put_u32(msg,  XNL_ATTR_CMPT_TRIG_MODE,
-		                     xcmd->u.qparm.cmpt_trig_mode);
+		nla_put_u32(msg, XNL_ATTR_CMPT_TRIG_MODE, xcmd->u.qparm.cmpt_trig_mode);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_GL_MAX))
-		nla_put_u32(msg,  XNL_ATTR_PIPE_GL_MAX,
-		                     xcmd->u.qparm.pipe_gl_max);
+		nla_put_u32(msg, XNL_ATTR_PIPE_GL_MAX, xcmd->u.qparm.pipe_gl_max);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_FLOW_ID))
-		nla_put_u32(msg,  XNL_ATTR_PIPE_FLOW_ID,
-		                     xcmd->u.qparm.pipe_flow_id);
+		nla_put_u32(msg, XNL_ATTR_PIPE_FLOW_ID, xcmd->u.qparm.pipe_flow_id);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_SLR_ID))
-		nla_put_u32(msg,  XNL_ATTR_PIPE_SLR_ID,
-		                     xcmd->u.qparm.pipe_slr_id);
+		nla_put_u32(msg, XNL_ATTR_PIPE_SLR_ID, xcmd->u.qparm.pipe_slr_id);
 	if (xcmd->u.qparm.sflags & (1 << QPARM_PIPE_TDEST))
-		nla_put_u32(msg,  XNL_ATTR_PIPE_TDEST,
-		                     xcmd->u.qparm.pipe_tdest);
+		nla_put_u32(msg, XNL_ATTR_PIPE_TDEST, xcmd->u.qparm.pipe_tdest);
 }
 
 static int get_cmd_resp_buf_len(struct xcmd_info *xcmd)
@@ -314,29 +303,27 @@ static int get_cmd_resp_buf_len(struct xcmd_info *xcmd)
 	unsigned int row_len = 50;
 
 	switch (xcmd->op) {
-	        case XNL_CMD_Q_DESC:
-	        	row_len *= 2;
-			// fall through
-	        case XNL_CMD_Q_CMPT:
-	        	buf_len += ((xcmd->u.qparm.range_end -
-	        			xcmd->u.qparm.range_start)*row_len);
-	        	break;
-	        case XNL_CMD_INTR_RING_DUMP:
-	        	buf_len += ((xcmd->u.intr.end_idx -
-					     xcmd->u.intr.start_idx)*row_len);
-	        	break;
-	        case XNL_CMD_DEV_LIST:
-	        case XNL_CMD_Q_START:
-	        case XNL_CMD_Q_STOP:
-			/* FALLTHRU */
-	        case XNL_CMD_Q_DEL:
-	        	return buf_len;
-	        case XNL_CMD_Q_LIST:
-	        case XNL_CMD_Q_DUMP:
-	        	break;
-	        default:
-	        	buf_len = XNL_RESP_BUFLEN_MIN;
-	        	break;
+        case XNL_CMD_Q_DESC:
+        	row_len *= 2;
+		// fall through
+        case XNL_CMD_Q_CMPT:
+        	buf_len += ((xcmd->u.qparm.range_end - xcmd->u.qparm.range_start)*row_len);
+        	break;
+        case XNL_CMD_INTR_RING_DUMP:
+        	buf_len += ((xcmd->u.intr.end_idx - xcmd->u.intr.start_idx)*row_len);
+        	break;
+        case XNL_CMD_DEV_LIST:
+        case XNL_CMD_Q_START:
+        case XNL_CMD_Q_STOP:
+		/* FALLTHRU */
+        case XNL_CMD_Q_DEL:
+        	return buf_len;
+        case XNL_CMD_Q_LIST:
+        case XNL_CMD_Q_DUMP:
+        	break;
+        default:
+        	buf_len = XNL_RESP_BUFLEN_MIN;
+        	break;
 	}
 	if ((xcmd->u.qparm.flags & XNL_F_QDIR_BOTH) == XNL_F_QDIR_BOTH)
 		buf_len *= 2;
@@ -409,10 +396,8 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		nla_put_u32(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
 		nla_put_u32(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
 		nla_put_u32(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
-		nla_put_u32(msg, XNL_ATTR_RANGE_START,
-					xcmd->u.qparm.range_start);
-		nla_put_u32(msg, XNL_ATTR_RANGE_END,
-					xcmd->u.qparm.range_end);
+		nla_put_u32(msg, XNL_ATTR_RANGE_START, xcmd->u.qparm.range_start);
+		nla_put_u32(msg, XNL_ATTR_RANGE_END, xcmd->u.qparm.range_end);
 		nla_put_u32(msg, XNL_ATTR_RSP_BUF_LEN, dlen);
 		break;
         case XNL_CMD_Q_RX_PKT:
@@ -422,27 +407,19 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		nla_put_u32(msg, XNL_ATTR_QFLAG, XNL_F_QDIR_C2H);
 		break;
         case XNL_CMD_INTR_RING_DUMP:
-		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_IDX,
-		                     xcmd->u.intr.vector);
-		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_START_IDX,
-		                     xcmd->u.intr.start_idx);
-		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_END_IDX,
-		                     xcmd->u.intr.end_idx);
+		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_IDX, xcmd->u.intr.vector);
+		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_START_IDX, xcmd->u.intr.start_idx);
+		nla_put_u32(msg, XNL_ATTR_INTR_VECTOR_END_IDX, xcmd->u.intr.end_idx);
 		nla_put_u32(msg, XNL_ATTR_RSP_BUF_LEN, dlen);
 		break;
         case XNL_CMD_REG_RD:
-		nla_put_u32(msg, XNL_ATTR_REG_BAR_NUM,
-    							 xcmd->u.reg.bar);
-		nla_put_u32(msg, XNL_ATTR_REG_ADDR,
-							 xcmd->u.reg.reg);
+		nla_put_u32(msg, XNL_ATTR_REG_BAR_NUM, xcmd->u.reg.bar);
+		nla_put_u32(msg, XNL_ATTR_REG_ADDR, xcmd->u.reg.reg);
 		break;
         case XNL_CMD_REG_WRT:
-		nla_put_u32(msg, XNL_ATTR_REG_BAR_NUM,
-    							 xcmd->u.reg.bar);
-		nla_put_u32(msg, XNL_ATTR_REG_ADDR,
-							 xcmd->u.reg.reg);
-		nla_put_u32(msg, XNL_ATTR_REG_VAL,
-							 xcmd->u.reg.val);
+		nla_put_u32(msg, XNL_ATTR_REG_BAR_NUM, xcmd->u.reg.bar);
+		nla_put_u32(msg, XNL_ATTR_REG_ADDR, xcmd->u.reg.reg);
+		nla_put_u32(msg, XNL_ATTR_REG_VAL, xcmd->u.reg.val);
 		break;
 #ifdef ERR_DEBUG
         case XNL_CMD_Q_ERR_INDUCE:
