@@ -66,33 +66,36 @@ static int xnl_send(struct xnl_cb *cb, struct nl_msg * msg)
 	return 0;
 }
 
-static int xnl_recv(struct xnl_cb *cb, struct xnl_hdr *hdr, int dlen, int print)
+static int xnl_recv(struct xnl_cb *cb, struct nl_msg *msg, int dlen)
 {
 	int rv;
 	struct sockaddr_nl addr = {
 		.nl_family = AF_NETLINK,
 	};
+	int fd = nl_socket_get_fd(cb->sk);
 
-	memset(hdr, 0, sizeof(struct xnl_gen_msg) + dlen);
+	struct nlmsghdr * hdr = nlmsg_hdr(msg);
+	struct genlmsghdr * gehdr = genlmsg_hdr(hdr);
 
-	rv = recv(cb->fd, hdr, dlen, 0);
+	// set the netlink header to 0
+	memset(hdr, 0, NLMSG_HDRLEN);
+
+	rv = recv(fd, hdr, dlen, 0);
 	if (rv < 0) {
 		perror("nl recv err");
 		return -1;
 	}
 	/* as long as there is attribute, even if it is shorter than expected */
-	if (!NLMSG_OK((&hdr->n), rv) && (rv <= sizeof(struct xnl_hdr))) {
-		if (print)
-			fprintf(stderr,
-				"nl recv:, invalid message, cmd 0x%x, %d,%d.\n",
-				hdr->g.cmd, dlen, rv);
+	if (!NLMSG_OK(hdr, rv) && (rv <= NLMSG_HDRLEN + NLMSG_LENGTH(GENL_HDRLEN))) {
+		fprintf(stderr,
+			"nl recv:, invalid message, cmd 0x%x, %d,%d.\n",
+			gehdr->cmd, dlen, rv);
 		return -1;
 	}
 
-	if (hdr->n.nlmsg_type == NLMSG_ERROR) {
-		if (print)
-			fprintf(stderr, "nl recv, msg error, cmd 0x%x\n",
-				hdr->g.cmd);
+	if (hdr->nlmsg_type == NLMSG_ERROR) {
+		fprintf(stderr, "nl recv, msg error, cmd 0x%x\n",
+			gehdr->cmd);
 		return -1;
 	}
 
@@ -459,7 +462,7 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 	if (rv < 0)
 		goto out;
 
-	rv = xnl_recv(cb, hdr, dlen, 1);
+	rv = xnl_recv(cb, msg, dlen);
 	if (rv < 0)
 		goto out;
 
