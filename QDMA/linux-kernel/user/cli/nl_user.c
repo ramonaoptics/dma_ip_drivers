@@ -387,6 +387,8 @@ static int get_cmd_resp_buf_len(struct xcmd_info *xcmd)
 	return buf_len;
 }
 
+#define genlmsg_alloc_size(size) nlmsg_alloc_size(NLMSG_LENGTH(GENL_HDRLEN) + (size))
+
 int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 {
 
@@ -394,7 +396,7 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 	int i;
 	int rv;
 	enum xnl_st_c2h_cmpt_desc_size cmpt_desc_size;
-	struct nl_msg * msg =	nlmsg_alloc();
+	struct nl_msg * msg =	genlmsg_alloc_size(dlen);
 
 	if (!msg) {
 		fprintf(stderr, "%s: OOM, %s, op %s,0x%x.\n", __FUNCTION__,
