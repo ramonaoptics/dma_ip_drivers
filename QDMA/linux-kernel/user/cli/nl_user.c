@@ -312,6 +312,7 @@ static int get_cmd_resp_buf_len(struct xcmd_info *xcmd)
 	switch (xcmd->op) {
 	        case XNL_CMD_Q_DESC:
 	        	row_len *= 2;
+			// fall through
 	        case XNL_CMD_Q_CMPT:
 	        	buf_len += ((xcmd->u.qparm.range_end -
 	        			xcmd->u.qparm.range_start)*row_len);
@@ -323,6 +324,7 @@ static int get_cmd_resp_buf_len(struct xcmd_info *xcmd)
 	        case XNL_CMD_DEV_LIST:
 	        case XNL_CMD_Q_START:
 	        case XNL_CMD_Q_STOP:
+			/* FALLTHRU */
 	        case XNL_CMD_Q_DEL:
 	        	return buf_len;
 	        case XNL_CMD_Q_LIST:
@@ -344,11 +346,8 @@ static int get_cmd_resp_buf_len(struct xcmd_info *xcmd)
 
 int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 {
-
 	int dlen = get_cmd_resp_buf_len(xcmd);
-	int i;
 	int rv;
-	enum xnl_st_c2h_cmpt_desc_size cmpt_desc_size;
 	struct sockaddr_nl addr;
 	addr.nl_family = cb->family;
 	addr.nl_pid = 0; // auto
@@ -373,9 +372,13 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 
 	switch(xcmd->op) {
         case XNL_CMD_DEV_LIST:
+		// fall through
         case XNL_CMD_DEV_INFO:
+		// fall through
         case XNL_CMD_DEV_STAT:
+		// fall through
         case XNL_CMD_DEV_STAT_CLEAR:
+		// fall through
         case XNL_CMD_Q_LIST:
 		/* no parameter */
 		break;
@@ -386,14 +389,18 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		break;
         case XNL_CMD_Q_START:
         	xnl_msg_add_extra_config_attrs(msg, xcmd);
+		// fall through
         case XNL_CMD_Q_STOP:
+		// fall through
         case XNL_CMD_Q_DEL:
+		// fall through
         case XNL_CMD_Q_DUMP:
 		nla_put_u32(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
 		nla_put_u32(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
 		nla_put_u32(msg, XNL_ATTR_QFLAG, xcmd->u.qparm.flags);
 		break;
         case XNL_CMD_Q_DESC:
+		// fall through
         case XNL_CMD_Q_CMPT:
 		nla_put_u32(msg, XNL_ATTR_QIDX, xcmd->u.qparm.idx);
 		nla_put_u32(msg, XNL_ATTR_NUM_Q, xcmd->u.qparm.num_q);
