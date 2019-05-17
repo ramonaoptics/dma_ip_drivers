@@ -48,7 +48,6 @@ struct xnl_gen_msg {
 
 void xnl_close(struct xnl_cb *cb)
 {
-	// close(cb->fd);
 	// closed automatically
 	nl_socket_free(cb->sk);
 }
