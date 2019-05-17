@@ -78,7 +78,7 @@ endif
 ifeq ($(DEBUG_THREADS),1)
   FLAGS += -DDEBUG -DDEBUG_THREADS
 endif
- 
+
 ifeq ($(enable_cmpt_immediate_data),1)
 	FLAGS += -DXNL_IMM_DATA_EN
 endif
@@ -162,14 +162,14 @@ $(shell rm -f $(srcdir)/drv/libqdma; ln -fs $(srcdir)/libqdma $(srcdir)/drv;)
 .PHONY: default
 default: user tools mod_pf mod_vf post
 
-.PHONY: pf 
+.PHONY: pf
 pf: user mod_pf
 
-.PHONY: vf 
+.PHONY: vf
 vf: user mod_vf
 
 .PHONY: mods
-mod: mod_pf mod_vf 
+mod: mod_pf mod_vf
 
 .PHONY: install
 install: install-mods install-user install-etc install-dev
