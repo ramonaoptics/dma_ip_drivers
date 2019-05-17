@@ -69,11 +69,8 @@ static int xnl_send(struct xnl_cb *cb, struct nl_msg * msg)
 static int xnl_recv(struct xnl_cb *cb, struct nl_msg *msg, int dlen)
 {
 	int rv;
-	struct sockaddr_nl addr = {
-		.nl_family = AF_NETLINK,
-	};
-	int fd = nl_socket_get_fd(cb->sk);
 
+	int fd = nl_socket_get_fd(cb->sk);
 	struct nlmsghdr * hdr = nlmsg_hdr(msg);
 	struct genlmsghdr * gehdr = genlmsg_hdr(hdr);
 
@@ -148,10 +145,15 @@ static inline int xnl_msg_add_int_attr(struct nl_msg *msg, enum xnl_attr_t type,
 				return nla_put(msg, type, sizeof(__u32), &v);
 }
 
-static int recv_attrs(struct xnl_hdr *hdr, struct xcmd_info *xcmd)
+/** Take the message from the netlink socket, and put the relevant info in xcmd
+ *
+ *
+ */
+static int recv_attrs(struct nl_msg *msg, struct xcmd_info *xcmd)
 {
-	unsigned char *p = (unsigned char *)(hdr + 1);
-	int maxlen = hdr->n.nlmsg_len - NLMSG_LENGTH(GENL_HDRLEN);
+	struct genlmsghdr* g = genlmsg_hdr(nlmsg_hdr(msg));
+	unsigned char *p = genlmsg_user_data(g, 0);
+	int maxlen = genlmsg_user_datalen(g, 0);
 
 #if 0
 	printf("nl recv, hdr len %d, data %d, gen op 0x%x, %s, ver 0x%x.\n",
@@ -222,12 +224,13 @@ static void get_dev_stat(struct xcmd_info *xcmd)
 	printf("Total ST C2H packets processed = %llu\n", stc2h_pkts);
 }
 
-static int recv_nl_msg(struct xnl_hdr *hdr, struct xcmd_info *xcmd)
+static int recv_nl_msg(struct nl_msg *msg, struct xcmd_info *xcmd)
 {
-	unsigned int op = hdr->g.cmd;
+	struct genlmsghdr* g = genlmsg_hdr(nlmsg_hdr(msg));
+	unsigned int op = g->cmd;
 	unsigned int usr_bar;
 
-	recv_attrs(hdr, xcmd);
+	recv_attrs(msg, xcmd);
 
 	switch(op) {
 	case XNL_CMD_DEV_LIST:
@@ -466,7 +469,7 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 	if (rv < 0)
 		goto out;
 
-	rv = recv_nl_msg(hdr, xcmd);
+	rv = recv_nl_msg(msg, xcmd);
 out:
 	nlmsg_free(msg);
 	return rv;
