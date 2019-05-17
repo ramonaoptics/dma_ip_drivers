@@ -178,7 +178,7 @@ enum xnl_qdma_rngsz_idx {
 };
 
 /** XNL attributes list */
-static const char *xnl_attr_str[XNL_ATTR_MAX] = {
+static __attribute__ ((unused)) const char *xnl_attr_str[XNL_ATTR_MAX] = {
 	"GENMSG",		/**< XNL_ATTR_GENMSG */
 	"DRV_INFO",		/**< XNL_ATTR_DRV_INFO */
 
@@ -259,7 +259,7 @@ enum xnl_op_t {
 /**
  * XNL command operation type
  */
-static const char *xnl_op_str[XNL_CMD_MAX] = {
+static __attribute__ ((unused)) const char *xnl_op_str[XNL_CMD_MAX] = {
 	"DEV_LIST",	/** XNL_CMD_DEV_LIST */
 	"DEV_INFO",	/** XNL_CMD_DEV_INFO */
 	"DEV_STAT", /** XNL_CMD_DEV_STAT */
