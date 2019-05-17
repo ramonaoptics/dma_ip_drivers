@@ -184,8 +184,7 @@ static void print_repeated_reg(uint32_t *bar, struct xreg_info *xreg,
 	for (i = start; i < end; i++) {
 		uint32_t addr = xreg->addr + (i * step);
 		char name[40];
-		int l = sprintf(name, "%s_%d",
-				xreg->name, i);
+		sprintf(name, "%s_%d", xreg->name, i);
 
 		if (xcmd == NULL) {
 			val = le32toh(bar[addr / 4]);
@@ -231,7 +230,7 @@ static void dump_regs(uint32_t *bar, struct xreg_info *reg_list, struct xdev_inf
 		} else {
 			uint32_t addr = xreg->addr;
 			if (xcmd == NULL) {
-				uint32_t val = le32toh(bar[addr / 4]);
+				// uint32_t val = le32toh(bar[addr / 4]);
 			} else {
 				xcmd->u.reg.reg = addr;
 				rv = reg_read_mmap(xdev, xcmd->u.reg.bar, xcmd, &val);
