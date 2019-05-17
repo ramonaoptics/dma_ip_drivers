@@ -182,21 +182,6 @@ static int xnl_msg_add_int_attr(struct xnl_hdr *hdr, enum xnl_attr_t type,
 	return 0;
 }
 
-static int xnl_msg_add_str_attr(struct xnl_hdr *hdr, enum xnl_attr_t type,
-				char *s)
-{
-	struct nlattr *attr = (struct nlattr *)((char *)hdr + hdr->n.nlmsg_len);
-	int len = strlen(s);
-
-        attr->nla_type = (__u16)type;
-        attr->nla_len = len + 1 + NLA_HDRLEN;
-
-	strcpy((char *)(attr + 1), s);
-
-        hdr->n.nlmsg_len += NLMSG_ALIGN(attr->nla_len);
-	return 0;
-}
-
 static int recv_attrs(struct xnl_hdr *hdr, struct xcmd_info *xcmd)
 {
 	unsigned char *p = (unsigned char *)(hdr + 1);
