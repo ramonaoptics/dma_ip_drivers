@@ -214,7 +214,7 @@ static int xnl_send_op(struct xnl_cb *cb, int op)
 
 	xnl_msg_set_hdr(&req, cb->family, op);
 
-	rv = xnl_send(cb, &req);	
+	rv = xnl_send(cb, &req);
 
 	return rv;
 }
@@ -236,7 +236,7 @@ static int xnl_msg_add_str_attr(struct xnl_hdr *hdr, enum xnl_attr_t type,
 				char *s)
 {
 	struct nlattr *attr = (struct nlattr *)((char *)hdr + hdr->n.nlmsg_len);
-	int len = strlen(s);	
+	int len = strlen(s);
 
         attr->nla_type = (__u16)type;
         attr->nla_len = len + 1 + NLA_HDRLEN;
@@ -272,8 +272,7 @@ static int recv_attrs(struct xnl_hdr *hdr, struct xcmd_info *xcmd)
 		xcmd->attr_mask |= 1 << na->nla_type;
 
 		if (na->nla_type == XNL_ATTR_GENMSG) {
-			printf("\n%s\n", (char *)(na + 1));
-
+			printf("%s\n", (char *)(na + 1));
 		} else if (na->nla_type == XNL_ATTR_DRV_INFO) {
 			strncpy(xcmd->drv_str, (char *)(na + 1), 128);
 		} else {
@@ -560,7 +559,7 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 		break;
 	}
 
-	rv = xnl_send(cb, hdr);	
+	rv = xnl_send(cb, hdr);
 	if (rv < 0)
 		goto out;
 
