@@ -404,8 +404,11 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 
 	struct xnl_hdr * hdr =  (struct xnl_hdr *)nlmsg_hdr(msg);
 
-	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, cb->family,
+	void * ret = genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, cb->family,
 	 						0, 0,  xcmd->op, 0);
+	if (ret == NULL){
+		goto out;
+	}
 
 	xnl_msg_add_int_attr(msg, XNL_ATTR_DEV_IDX, xcmd->if_bdf);
 
