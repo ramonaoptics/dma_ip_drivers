@@ -28,24 +28,6 @@
 #include "nl_user.h"
 #include "cmd_parse.h"
 
-/* Generic macros for dealing with netlink sockets. Might be duplicated
- * elsewhere. It is recommended that commercial grade applications use
- * libnl or libnetlink and use the interfaces provided by the library
- */
-
-/*
- * netlink message
- */
-struct xnl_hdr {
-	struct nlmsghdr n;
-	struct genlmsghdr g;
-};
-
-struct xnl_gen_msg {
-	struct xnl_hdr hdr;
-	char data[0];
-};
-
 void xnl_close(struct xnl_cb *cb)
 {
 	// closed automatically
@@ -376,8 +358,6 @@ int xnl_send_cmd(struct xnl_cb *cb, struct xcmd_info *xcmd)
 			xcmd->ifname, xnl_op_str[xcmd->op], xcmd->op);
 		return -ENOMEM;
 	}
-
-	struct xnl_hdr * hdr =  (struct xnl_hdr *)nlmsg_hdr(msg);
 
 	void * ret = genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, cb->family,
 	 						0, 0,  xcmd->op, 0);
