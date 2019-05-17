@@ -169,20 +169,6 @@ static void xnl_msg_set_hdr(struct xnl_hdr *hdr, int family, int op)
 	hdr->g.cmd = op;
 }
 
-static int xnl_send_op(struct xnl_cb *cb, int op)
-{
-	struct xnl_hdr req;
-	int rv;
-
-	memset(&req, 0, sizeof(struct xnl_hdr));
-
-	xnl_msg_set_hdr(&req, cb->family, op);
-
-	rv = xnl_send(cb, &req);
-
-	return rv;
-}
-
 static int xnl_msg_add_int_attr(struct xnl_hdr *hdr, enum xnl_attr_t type,
 				unsigned int v)
 {
