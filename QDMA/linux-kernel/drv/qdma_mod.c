@@ -1155,7 +1155,7 @@ int xpdev_queue_delete(struct xlnx_pci_dev *xpdev, unsigned int qidx, bool c2h,
 {
 	struct xlnx_qdata *qdata = xpdev_queue_get(xpdev, qidx, c2h, 1, ebuf,
 						ebuflen);
-	int rv = 0;
+	int rv = -EINVAL;
 
 	if (!qdata)
 		return -EINVAL;
