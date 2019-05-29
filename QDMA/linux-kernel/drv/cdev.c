@@ -452,10 +452,10 @@ static ssize_t cdev_aio_write(struct kiocb *iocb, const struct iovec *io,
 		caio->reqv[i]->udd_len = 0;
 		caio->reqv[i]->ep_addr = (u64)pos;
 		caio->reqv[i]->no_memcpy = xcdev->no_memcpy ? 1 : 0;
-		caio->reqv[i]->count = io->iov_len;
+		caio->reqv[i]->count = io[i].iov_len;
 		caio->reqv[i]->timeout_ms = 10 * 1000;	/* 10 seconds */
 		caio->reqv[i]->fp_done = qdma_req_completed;
-
+		pos += io[i].iov_len;
 	}
 	if (i > 0) {
 		iocb->private = caio;
@@ -525,9 +525,10 @@ static ssize_t cdev_aio_read(struct kiocb *iocb, const struct iovec *io,
 		caio->reqv[i]->udd_len = 0;
 		caio->reqv[i]->ep_addr = (u64)pos;
 		caio->reqv[i]->no_memcpy = xcdev->no_memcpy ? 1 : 0;
-		caio->reqv[i]->count = io->iov_len;
+		caio->reqv[i]->count = io[i].iov_len;
 		caio->reqv[i]->timeout_ms = 10 * 1000;	/* 10 seconds */
 		caio->reqv[i]->fp_done = qdma_req_completed;
+		pos += io[i].iov_len;
 	}
 	if (i > 0) {
 		iocb->private = caio;
