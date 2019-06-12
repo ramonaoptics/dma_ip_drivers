@@ -2045,7 +2045,7 @@ static int xnl_register_read(struct sk_buff *skb2, struct genl_info *info)
 			return -EINVAL;
 		}
 	} else {
-		sprintf(buf, XNL_RESP_BUFLEN_MIN,
+		snprintf(buf, XNL_RESP_BUFLEN_MIN,
 			"Invalid bar number\n");
 		goto send_resp;
 	}
