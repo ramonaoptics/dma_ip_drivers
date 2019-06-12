@@ -1447,7 +1447,7 @@ static int xnl_q_stop(struct sk_buff *skb2, struct genl_info *info)
 	struct qdma_queue_conf qconf;
 	char buf[XNL_RESP_BUFLEN_MIN];
 	struct xlnx_qdata *qdata;
-	int rv = 0, rv2 = 0;
+	int rv = 0;
 	unsigned char is_qp;
 	unsigned short num_q;
 	unsigned int i;
@@ -1522,7 +1522,7 @@ static int xnl_q_del(struct sk_buff *skb2, struct genl_info *info)
 	struct xlnx_pci_dev *xpdev;
 	struct qdma_queue_conf qconf;
 	char buf[XNL_RESP_BUFLEN_MIN];
-	int rv = 0, rv2 = 0;
+	int rv = 0;
 	unsigned char is_qp;
 	unsigned short num_q;
 	unsigned int i;
@@ -2292,7 +2292,7 @@ static int xnl_register_read(struct sk_buff *skb2, struct genl_info *info)
 			return rv;
 		}
 	} else {
-		rv = sprintf(buf, XNL_RESP_BUFLEN_MIN,
+		rv = snprintf(buf, XNL_RESP_BUFLEN_MIN,
 			"Invalid bar number\n");
 		goto send_resp;
 	}

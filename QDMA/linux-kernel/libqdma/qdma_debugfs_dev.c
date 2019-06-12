@@ -331,7 +331,7 @@ static int dbgfs_dump_intr_ring(unsigned long dev_hndl, char *dev_name,
 		buf[len] = '\0';
 	}
 	else{
-		buflen[len] = '\0';
+		buf[len] = '\0';
 	}
 	*data = buf;
 	*data_len = buflen;
