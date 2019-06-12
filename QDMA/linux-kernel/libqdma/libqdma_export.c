@@ -591,8 +591,10 @@ int qdma_queue_dump(unsigned long dev_hndl, unsigned long id, char *buf,
 		return QDMA_ERR_INVALID_INPUT_PARAM;
 
 	/** read the descq data to dump */
-	qdma_descq_dump(descq, buf, buflen, 1);
-	len = strlen(buf);
+	len = qdma_descq_dump(descq, buf, buflen, 1);
+	if (len < 0){
+		return -EINVAL;
+	}
 
 	/** read the descq context for the given qid */
 	rv = qdma_descq_context_read(descq->xdev, descq->qidx_hw,
