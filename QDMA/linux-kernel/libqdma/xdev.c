@@ -921,9 +921,8 @@ int qdma_device_open(const char *mod_name, struct qdma_dev_conf *conf,
 	xdev_flag_set(xdev, XDEV_FLAG_OFFLINE);
 	xdev_list_add(xdev);
 
-	rv = sprintf(xdev->conf.name, "qdma%05x-p%s",
+	snprintf(xdev->conf.name, QDMA_QUEUE_NAME_MAXLEN, "qdma%05x-p%s",
 		xdev->conf.bdf, dev_name(&xdev->conf.pdev->dev));
-	xdev->conf.name[rv] = '\0';
 
 	/* Mapping bars */
 	rv = xdev_map_bars(xdev, pdev);
