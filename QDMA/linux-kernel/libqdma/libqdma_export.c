@@ -1695,10 +1695,9 @@ int qdma_intr_ring_dump(unsigned long dev_hndl, unsigned int vector_idx,
 	if ((xdev->conf.qdma_drv_mode != INDIRECT_INTR_MODE) &&
 			(xdev->conf.qdma_drv_mode != AUTO_MODE)) {
 		pr_info("Interrupt aggregation not enabled\n");
-		if (buf)  {
-			len += sprintf(buf + len,
-					"Interrupt aggregation not enabled\n");
-			buf[len] = '\0';
+		if (buf && buflen)  {
+			snprintf(buf, buflen,
+				"Interrupt aggregation not enabled\n");
 		}
 		return -1;
 	}
@@ -1714,14 +1713,13 @@ int qdma_intr_ring_dump(unsigned long dev_hndl, unsigned int vector_idx,
 				xdev->dvec_start_idx,
 				(xdev->dvec_start_idx +
 				QDMA_NUM_DATA_VEC_FOR_INTR_CXT - 1));
-		if (buf)  {
-			len += sprintf(buf + len,
+		if (buf && buflen)  {
+			snprintf(buf, buflen,
 				"Vector idx %d is invalid. Shall be in range: %d -  %d.\n",
 				vector_idx,
 				xdev->dvec_start_idx,
 				(xdev->dvec_start_idx +
 				QDMA_NUM_DATA_VEC_FOR_INTR_CXT - 1));
-			buf[len] = '\0';
 		}
 		return -1;
 	}
@@ -1736,12 +1734,11 @@ int qdma_intr_ring_dump(unsigned long dev_hndl, unsigned int vector_idx,
 		pr_info("start_idx %d is invalid. Shall be less than: %d\n",
 					start_idx,
 					coal_entry->intr_rng_num_entries);
-		if (buf)  {
-			len += sprintf(buf + len,
-					"start_idx %d is invalid. Shall be less than: %d\n",
-					start_idx,
-					coal_entry->intr_rng_num_entries);
-			buf[len] = '\0';
+		if (buf && buflen)  {
+			snprintf(buf, buflen,
+				"start_idx %d is invalid. Shall be less than: %d\n",
+				start_idx,
+				coal_entry->intr_rng_num_entries);
 		}
 		return -1;
 	}
@@ -1754,10 +1751,9 @@ int qdma_intr_ring_dump(unsigned long dev_hndl, unsigned int vector_idx,
 
 	if (start_idx > end_idx) {
 		pr_info("start_idx can't be greater than end_idx\n");
-		if (buf)  {
-			len += sprintf(buf + len,
-					"start_idx can't be greater than end_idx\n");
-			buf[len] = '\0';
+		if (buf && buflen)  {
+			snprintf(buf, buflen,
+				"start_idx can't be greater than end_idx\n");
 		}
 		return -1;
 	}
@@ -1768,11 +1764,15 @@ int qdma_intr_ring_dump(unsigned long dev_hndl, unsigned int vector_idx,
 	for (counter = start_idx; counter <= end_idx; counter++) {
 		ring_entry = coal_entry->intr_ring_base + counter;
 		memcpy(data, ring_entry, sizeof(u32) * 2);
-		if (buf) {
-			len += sprintf(buf + len,
-				       "intr_ring_entry = %d: 0x%08x 0x%08x\n",
-				       counter, data[1], data[0]);
-			buf[len] = '\0';
+		if (buf && (buflen - len > 0)) {
+			len += snprintf(buf + len, buflen - len,
+					"intr_ring_entry = %d: 0x%08x 0x%08x\n",
+					counter, data[1], data[0]);
+			if (buflen < len){
+				pr_info("Insufficient space for full printing info to buffer\n");
+				*buf = '\0';
+				return -1;
+			}
 		}
 	}
 
