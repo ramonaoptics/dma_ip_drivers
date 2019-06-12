@@ -1009,7 +1009,7 @@ handle_truncation:
 	// shouldn't be looked at
 	pr_warn("ERR! str truncated. req=%lu, avail=%u", cur - buf, buflen);
 	*buf = '\0';
-	return cur - buf;
+	return buf - cur;
 }
 
 /*****************************************************************************/
