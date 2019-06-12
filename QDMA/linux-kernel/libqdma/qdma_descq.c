@@ -960,7 +960,7 @@ void qdma_descq_config(struct qdma_descq *descq, struct qdma_queue_conf *qconf,
 #ifdef __QDMA_VF__
 		len = snprintf(descq->conf.name, QDMA_QUEUE_NAME_MAXLEN, "qdmavf");
 #else
-		len = snprintf(descq->conf.name, "qdma");
+		len = snprintf(descq->conf.name, QDMA_DEV_NAME_MAXLEN, "qdma");
 #endif
 		len += snprintf(descq->conf.name + len,
 			QDMA_QUEUE_NAME_MAXLEN - len,
