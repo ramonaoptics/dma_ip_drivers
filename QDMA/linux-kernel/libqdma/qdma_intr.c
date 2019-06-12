@@ -72,7 +72,7 @@ static int dump_qdma_regs(struct xlnx_dma_dev *xdev)
 
 	*data = buf;
 	*data_len = buflen;
-
+	// TODO: Is this even safe... probalby not
 	buf[++len] = '\0';
 	memset(temp_buf, '\0', 512);
 	for (dis_len = 0; dis_len < len; dis_len += 512) {
