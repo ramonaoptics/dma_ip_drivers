@@ -1238,8 +1238,8 @@ static int xnl_q_start(struct sk_buff *skb2, struct genl_info *info)
 	xnl_extract_extra_config_attr(info, &qconf);
 
 	if (qconf.st && qconf.en_mm_cmpt) {
-		rv += snprintf(buf, 40, "MM CMPL is valid only for MM Mode");
-		buf[rv] = '\0';
+		snprintf(buf, XNL_RESP_BUFLEN_MIN,
+			 "MM CMPL is valid only for MM Mode");
 		goto send_resp;
 	}
 	if (!info->attrs[XNL_ATTR_C2H_BUFSZ_IDX])
@@ -1298,6 +1298,7 @@ static int xnl_q_stop(struct sk_buff *skb2, struct genl_info *info)
 	unsigned int i;
 	unsigned short qidx;
 	unsigned char is_c2h;
+	buf[0] = '\0';
 
 	if (info == NULL)
 		return 0;
@@ -1328,6 +1329,7 @@ static int xnl_q_stop(struct sk_buff *skb2, struct genl_info *info)
 		qconf.c2h = is_c2h;
 stop_q:
 		qconf.qidx = i;
+		// I don't think anything is written here
 		qdata = xnl_rcv_check_qidx(info, xpdev, &qconf, buf,
 					XNL_RESP_BUFLEN_MIN);
 		if (!qdata)
@@ -1343,8 +1345,8 @@ stop_q:
 			goto stop_q;
 		}
 	}
-	rv += sprintf(buf + rv, "Stopped Queues %d -> %d.\n", qidx, i - 1);
-	buf[rv] = '\0';
+	snprintf(buf + rv, XNL_RESP_BUFLEN_MIN - rv,
+		 "Stopped Queues %d -> %d.\n", qidx, i - 1);
 send_resp:
 	rv = xnl_respond_buffer(info, buf, XNL_RESP_BUFLEN_MIN);
 	return rv;
@@ -1402,8 +1404,8 @@ del_q:
 			goto del_q;
 		}
 	}
-	rv += sprintf(buf + rv, "Deleted Queues %d -> %d.\n", qidx, i - 1);
-	buf[rv] = '\0';
+	snprintf(buf + rv, XNL_RESP_BUFLEN_MIN - rv,
+		"Deleted Queues %d -> %d.\n", qidx, i - 1);
 send_resp:
 	rv = xnl_respond_buffer(info, buf, XNL_RESP_BUFLEN_MIN);
 	return rv;
@@ -1525,10 +1527,9 @@ static int xnl_q_dump_desc(struct sk_buff *skb2, struct genl_info *info)
 
 	buf = xnl_mem_alloc(buf_len, info);
 	if (!buf) {
-		rv = sprintf(ebuf, "%s OOM %d.\n",
-				__func__, buf_len);
+		snprintf(ebuf, XNL_RESP_BUFLEN_MIN,
+			"%s OOM %d.\n", __func__, buf_len);
 
-		ebuf[rv] = '\0';
 		xnl_respond_buffer(info, ebuf, XNL_RESP_BUFLEN_MIN);
 		return -ENOMEM;
 	}
@@ -1614,9 +1615,8 @@ static int xnl_q_dump_cmpt(struct sk_buff *skb2, struct genl_info *info)
 
 	buf = xnl_mem_alloc(buf_len, info);
 	if (!buf) {
-		rv = sprintf(ebuf, "%s OOM %d.\n",
-				__func__, buf_len);
-		ebuf[rv] = '\0';
+		snprintf(ebuf, XNL_RESP_BUFLEN_MIN,
+			"%s OOM %d.\n", __func__, buf_len);
 		xnl_respond_buffer(info, ebuf, XNL_RESP_BUFLEN_MIN);
 		return -ENOMEM;
 	}
@@ -1777,9 +1777,11 @@ static int xnl_q_cmpt_read(struct sk_buff *skb2, struct genl_info *info)
 						buf_len - diff_len, 0);
 				diff_len = strlen(buf);
 			}
+			// TODO: Seems dangerous
 			buf[diff_len++] = '\n';
 			cmpt_entry_list += cmpt_entry_len;
 		}
+		// TODO: seems dangerous
 		buf[diff_len++] = '\0';
 	}
 
@@ -1817,9 +1819,8 @@ static int xnl_err_induce(struct sk_buff *skb2, struct genl_info *info)
 
 	buf = xnl_mem_alloc(XNL_RESP_BUFLEN_MAX, info);
 	if (!buf) {
-		rv = sprintf(ebuf, "%s OOM %d.\n",
-				__func__, XNL_RESP_BUFLEN_MAX);
-		ebuf[rv] = '\0';
+		snprintf(ebuf, XNL_RESP_BUFLEN_MIN,
+			"%s OOM %d.\n", __func__, XNL_RESP_BUFLEN_MAX);
 		xnl_respond_buffer(info, ebuf, XNL_RESP_BUFLEN_MIN);
 		return -ENOMEM;
 	}
@@ -1832,12 +1833,11 @@ static int xnl_err_induce(struct sk_buff *skb2, struct genl_info *info)
 
 	if (qdma_queue_set_err_induction(xpdev->dev_hndl, qdata->qhndl, err,
 					 buf, XNL_RESP_BUFLEN_MAX)) {
-		rv += sprintf(buf + rv, "Failed to set induce err\n");
+		snprintf(buf + rv, XNL_RESP_BUFLEN_MAX - rv,
+			"Failed to set induce err\n");
 		goto send_resp;
 	}
-	rv += sprintf(buf + rv, "queue error induced\n");
-	buf[rv] = '\0';
-
+	sprintf(buf + rv, "queue error induced\n");
 send_resp:
 	rv = xnl_respond_buffer(info, buf, XNL_RESP_BUFLEN_MAX);
 
@@ -1879,9 +1879,8 @@ static int xnl_q_read_pkt(struct sk_buff *skb2, struct genl_info *info)
 
 	buf = xnl_mem_alloc(buf_len, info);
 	if (!buf) {
-		rv = sprintf(ebuf, "%s OOM %d.\n",
-				__func__, buf_len);
-		ebuf[rv] = '\0';
+		sprintf(ebuf, XNL_RESP_BUFLEN_MIN,
+			"%s OOM %d.\n", __func__, buf_len);
 		xnl_respond_buffer(info, ebuf, XNL_RESP_BUFLEN_MIN);
 		return -ENOMEM;
 	}
@@ -1907,6 +1906,7 @@ static int xnl_q_read_pkt(struct sk_buff *skb2, struct genl_info *info)
 			goto send_resp;
 		}
 	}
+	// TODO: Check if this is correct
 	buf[rv] = '\0';
 send_resp:
 	rv = xnl_respond_buffer(info, buf, buf_len);
@@ -1953,24 +1953,21 @@ static int xnl_intr_ring_dump(struct sk_buff *skb2, struct genl_info *info)
 
 	if (xpdev->idx == 0) {
 		if (vector_idx == 0) {
-			rv += sprintf(buf + rv,
+			snprintf(buf, buf_len,
 				"vector_idx %d is for error interrupt\n",
 				vector_idx);
-			buf[rv] = '\0';
 			goto send_resp;
 		} else if (vector_idx == 1) {
-			rv += sprintf(buf + rv,
+			snprintf(buf, buf_len,
 				"vector_idx %d is for user interrupt\n",
 				vector_idx);
-			buf[rv] = '\0';
 			goto send_resp;
 		}
 	} else {
 		if (vector_idx == 0) {
-			rv += sprintf(buf + rv,
+			snprintf(buf, buf_len,
 				"vector_idx %d is for user interrupt\n",
 				vector_idx);
-			buf[rv] = '\0';
 			goto send_resp;
 		}
 	}
@@ -2048,8 +2045,8 @@ static int xnl_register_read(struct sk_buff *skb2, struct genl_info *info)
 			return -EINVAL;
 		}
 	} else {
-		rv += sprintf(buf + rv, "Invalid bar number\n");
-		buf[rv] = '\0';
+		sprintf(buf, XNL_RESP_BUFLEN_MIN,
+			"Invalid bar number\n");
 		goto send_resp;
 	}
 
@@ -2076,6 +2073,7 @@ static int xnl_register_write(struct sk_buff *skb2, struct genl_info *info)
 	unsigned int bar_num = 0, reg_addr = 0;
 	uint32_t reg_val = 0;
 	int rv = 0;
+	buf[0] = '\0';
 
 	if (info == NULL)
 		return 0;
@@ -2127,12 +2125,10 @@ static int xnl_register_write(struct sk_buff *skb2, struct genl_info *info)
 			return -EINVAL;
 		}
 	} else {
-		rv += sprintf(buf + rv, "Invalid bar number\n");
-		buf[rv] = '\0';
+		snprintf(buf + rv, XNL_RESP_BUFLEN_MIN,
+			"Invalid bar number\n");
 		goto send_resp;
 	}
-
-	buf[rv] = '\0';
 
 send_resp:
 	rv = xnl_respond_buffer(info, buf, XNL_RESP_BUFLEN_MIN);
