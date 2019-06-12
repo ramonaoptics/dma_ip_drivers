@@ -503,9 +503,8 @@ static int qdbg_cntxt_read(unsigned long dev_hndl, unsigned long id,
 			descq->conf.st, descq->conf.c2h,
 			descq->mm_cmpt_ring_crtd, &ctxt);
 	if (rv < 0) {
-		len += sprintf(buf + len, "%s read context failed %d.\n",
-				descq->conf.name, rv);
-		buf[len] = '\0';
+		snprintf(buf, buflen,
+			"%s read context failed %d.\n", descq->conf.name, rv);
 
 		*data = buf;
 		*data_len = buflen;
@@ -559,6 +558,7 @@ static int qdbg_cntxt_read(unsigned long dev_hndl, unsigned long id,
 	}
 
 cntxt_exit:
+	// TODO: this is probably unsafe. As is the rest of this function....
 	buf[len] = '\0';
 
 	*data = buf;
