@@ -325,8 +325,14 @@ static int dbgfs_dump_intr_ring(unsigned long dev_hndl, char *dev_name,
 		return rv;
 	}
 
-	len = strlen(buf);
-	buf[len++] = '\n';
+	len = strnlen(buf, buflen);
+	if (len < buflen - 1){
+		buf[len++] = '\n';
+		buf[len] = '\0';
+	}
+	else{
+		buflen[len] = '\0';
+	}
 	*data = buf;
 	*data_len = buflen;
 
