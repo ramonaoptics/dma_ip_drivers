@@ -1364,6 +1364,7 @@ int xpdev_nl_queue_start(struct xlnx_pci_dev *xpdev, void *nl_info, u8 is_qp,
 	struct xlnx_nl_work_q_ctrl *qctrl;
 	char ebuf[XNL_EBUFLEN];
 	int rv = 0;
+	ebuf[0] = '\0';
 
 	if (!nl_work)
 		return -ENOMEM;
