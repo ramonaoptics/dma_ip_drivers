@@ -133,7 +133,7 @@ int xdev_list_dump(char *buf, int buflen)
 
 	mutex_lock(&xdev_mutex);
 	list_for_each_entry_safe(xdev, tmp, &xdev_list, list_head) {
-		len += sprintf(buf + len, "qdma%05x\t%02x:%02x.%02x\n",
+		len += snprintf(buf + len, buflen - len, "qdma%05x\t%02x:%02x.%02x\n",
 				xdev->conf.bdf, xdev->conf.pdev->bus->number,
 				PCI_SLOT(xdev->conf.pdev->devfn),
 				PCI_FUNC(xdev->conf.pdev->devfn));
@@ -142,7 +142,6 @@ int xdev_list_dump(char *buf, int buflen)
 	}
 	mutex_unlock(&xdev_mutex);
 
-	buf[len] = '\0';
 	return len;
 }
 
@@ -1011,4 +1010,3 @@ int qdma_device_set_config(unsigned long dev_hndl, struct qdma_dev_conf *conf)
 
 	return 0;
 }
-
