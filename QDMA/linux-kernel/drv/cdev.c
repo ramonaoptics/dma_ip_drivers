@@ -621,10 +621,8 @@ int qdma_cdev_create(struct qdma_cdev_cb *xcb, struct pci_dev *pdev,
 	if (!xcdev) {
 		pr_info("%s OOM %lu.\n", qconf->name, sizeof(struct qdma_cdev));
 		if (ebuf && ebuflen) {
-			rv = sprintf(ebuf, "%s cdev OOM %lu.\n",
+			snprintf(ebuf, ebuflen, "%s cdev OOM %lu.\n",
 				qconf->name, sizeof(struct qdma_cdev));
-			ebuf[rv] = '\0';
-
 		}
 		return -ENOMEM;
 	}
@@ -640,9 +638,8 @@ int qdma_cdev_create(struct qdma_cdev_cb *xcb, struct pci_dev *pdev,
 	if (xcdev->minor >= xcb->cdev_minor_cnt) {
 		pr_info("%s: no char dev. left.\n", qconf->name);
 		if (ebuf && ebuflen) {
-			rv = sprintf(ebuf, "%s cdev no cdev left.\n",
+			snprintf(ebuf, ebuflen, "%s cdev no cdev left.\n",
 					qconf->name);
-			ebuf[rv] = '\0';
 		}
 		rv = -ENOSPC;
 		goto err_out;
@@ -656,9 +653,8 @@ int qdma_cdev_create(struct qdma_cdev_cb *xcb, struct pci_dev *pdev,
 	if (rv < 0) {
 		pr_info("cdev_add failed %d, %s.\n", rv, xcdev->name);
 		if (ebuf && ebuflen) {
-			int l = sprintf(ebuf, "%s cdev add failed %d.\n",
+			snprintf(ebuf, ebuflen, "%s cdev add failed %d.\n",
 					qconf->name, rv);
-			ebuf[l] = '\0';
 		}
 		goto err_out;
 	}
@@ -672,10 +668,9 @@ int qdma_cdev_create(struct qdma_cdev_cb *xcb, struct pci_dev *pdev,
 			pr_info("%s device_create failed %d.\n",
 				xcdev->name, rv);
 			if (ebuf && ebuflen) {
-				int l = sprintf(ebuf,
-						"%s device_create failed %d.\n",
-						qconf->name, rv);
-				ebuf[l] = '\0';
+				snprintf(ebuf, ebuflen,
+					"%s device_create failed %d.\n",
+					qconf->name, rv);
 			}
 			goto del_cdev;
 		}
