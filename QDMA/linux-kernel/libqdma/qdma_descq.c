@@ -958,14 +958,15 @@ void qdma_descq_config(struct qdma_descq *descq, struct qdma_queue_conf *qconf,
 
 		/* qdma[vf]<255>-MM/ST-H2C/C2H-Q[2048] */
 #ifdef __QDMA_VF__
-		len = sprintf(descq->conf.name, "qdmavf");
+		len = snprintf(descq->conf.name, QDMA_QUEUE_NAME_MAXLEN, "qdmavf");
 #else
-		len = sprintf(descq->conf.name, "qdma");
+		len = snprintf(descq->conf.name, "qdma");
 #endif
-		len += sprintf(descq->conf.name + len, "%05x-%s-%u",
+		len += snprintf(descq->conf.name + len,
+			QDMA_QUEUE_NAME_MAXLEN - len,
+			"%05x-%s-%u",
 			descq->xdev->conf.bdf, descq->conf.st ? "ST" : "MM",
 			descq->conf.qidx);
-		descq->conf.name[len] = '\0';
 
 		descq->conf.st = qconf->st;
 		descq->conf.c2h = qconf->c2h;
@@ -1310,8 +1311,10 @@ int qdma_descq_dump_desc(struct qdma_descq *descq, int start,
 			len += sprintf(buf + len, " fl pg 0x%p, 0x%llx.\n",
 				fl->pg, fl->dma_addr);
 			fl++;
-		} else
+		} else{
+			// TODO: is this even safe... probaly not
 			buf[len++] = '\n';
+		}
 	}
 
 	p = descq->desc_cmpl_status;
@@ -1322,6 +1325,7 @@ int qdma_descq_dump_desc(struct qdma_descq *descq, int start,
 	hex_dump_to_buffer(p, get_desc_cmpl_status_size(descq), 16, 4,
 			buf + len, buflen - len, 0);
 	len = strlen(buf);
+	// TODO: is this even safe.... probably not
 	buf[len++] = '\n';
 
 	if (descq->conf.st && descq->conf.c2h) {
@@ -1339,6 +1343,7 @@ int qdma_descq_dump_desc(struct qdma_descq *descq, int start,
 					buf + len, buflen - len, 0);
 			len = strlen(buf);
 		}
+		// TODO: is this even safe.... probably not
 		buf[len++] = '\n';
 	}
 
@@ -1402,6 +1407,7 @@ int qdma_descq_dump_cmpt(struct qdma_descq *descq, int start,
 					   32, 4, buf + len, buflen - len, 0);
 			len = strlen(buf);
 		}
+		// TODO: is this even safe.... probably not
 		buf[len++] = '\n';
 	}
 
@@ -1414,6 +1420,7 @@ int qdma_descq_dump_cmpt(struct qdma_descq *descq, int start,
 	hex_dump_to_buffer(p, sizeof(struct qdma_c2h_cmpt_cmpl_status),
 			16, 4, buf + len, buflen - len, 0);
 	len = strlen(buf);
+	// TODO: is this even safe.... probably not
 	buf[len++] = '\n';
 
 	return len;
@@ -1687,17 +1694,16 @@ int qdma_descq_get_cmpt_udd(unsigned long dev_hndl, unsigned long id,
 	for (i = 0; i < descq->cmpt_entry_len; i++) {
 		if (buf && buflen) {
 			if (i == 0)
-				print_len = sprintf(buf + len, "%02x",
+				print_len = snprintf(buf + len, buflen, "%02x",
 						(cmpt[i] & 0xF0));
 			else
-				print_len = sprintf(buf + len, "%02x",
+				print_len = snprintf(buf + len, buflen, "%02x",
 						    cmpt[i]);
 
 		}
 		buflen -= print_len;
 		len += print_len;
 	}
-	buf[len] = '\0';
 
 	return 0;
 }
@@ -1825,10 +1831,9 @@ int qdma_descq_read_cmpt_data(unsigned long dev_hndl, unsigned long id,
 
 		l = strlen(buf);
 
-		l += snprintf(buf + l, buflen,
+		l += snprintf(buf + l, buflen - l,
 			"%s no pending entries in cmpt ring\n",
 			descq->conf.name);
-		buf[l] = '\0';
 		*num_entries = 0;
 		return 0;
 	}
@@ -1840,9 +1845,7 @@ int qdma_descq_read_cmpt_data(unsigned long dev_hndl, unsigned long id,
 		*cmpt_entries = kzalloc((*num_entries * descq->cmpt_entry_len),
 								GFP_KERNEL);
 		if (!*cmpt_entries) {
-			int l = snprintf(buf, buflen, "OOM for cmpt_entries\n");
-
-			buf[l] = '\0';
+			snprintf(buf, buflen, "OOM for cmpt_entries\n");
 			*num_entries = 0;
 			return 0;
 		}
