@@ -540,17 +540,16 @@ static struct xlnx_qdata *xnl_rcv_check_qidx(struct genl_info *info,
 }
 
 static int xnl_chk_attr(enum xnl_attr_t xnl_attr, struct genl_info *info,
-				unsigned short qidx, char *buf)
+				unsigned short qidx, char *buf, int buflen)
 {
 	int rv = 0;
 
 	if (!info->attrs[xnl_attr]) {
-		if (buf) {
-			rv += sprintf(buf,
+		if (buf && buflen) {
+			snprintf(buf, buflen,
 				"Missing attribute %s for qidx = %u\n",
 				xnl_attr_str[xnl_attr],
 				qidx);
-			buf[rv] = '\0';
 		}
 		rv = -1;
 	}
@@ -579,45 +578,45 @@ static void xnl_extract_extra_config_attr(struct genl_info *info,
 	if (qconf->en_mm_cmpt)
 		qconf->cmpl_udd_en = 1;
 
-	if (xnl_chk_attr(XNL_ATTR_QRNGSZ_IDX, info, qconf->qidx, NULL) == 0)
+	if (xnl_chk_attr(XNL_ATTR_QRNGSZ_IDX, info, qconf->qidx, NULL, 0) == 0)
 		qconf->desc_rng_sz_idx = qconf->cmpl_rng_sz_idx =
 				nla_get_u32(info->attrs[XNL_ATTR_QRNGSZ_IDX]);
-	if (xnl_chk_attr(XNL_ATTR_C2H_BUFSZ_IDX, info, qconf->qidx, NULL) == 0)
+	if (xnl_chk_attr(XNL_ATTR_C2H_BUFSZ_IDX, info, qconf->qidx, NULL, 0) == 0)
 		qconf->c2h_buf_sz_idx =
 			nla_get_u32(info->attrs[XNL_ATTR_C2H_BUFSZ_IDX]);
-	if (xnl_chk_attr(XNL_ATTR_CMPT_TIMER_IDX, info, qconf->qidx, NULL) == 0)
+	if (xnl_chk_attr(XNL_ATTR_CMPT_TIMER_IDX, info, qconf->qidx, NULL, 0) == 0)
 		qconf->cmpl_timer_idx =
 			nla_get_u32(info->attrs[XNL_ATTR_CMPT_TIMER_IDX]);
-	if (xnl_chk_attr(XNL_ATTR_CMPT_CNTR_IDX, info, qconf->qidx, NULL) == 0)
+	if (xnl_chk_attr(XNL_ATTR_CMPT_CNTR_IDX, info, qconf->qidx, NULL, 0) == 0)
 		qconf->cmpl_cnt_th_idx =
 			nla_get_u32(info->attrs[XNL_ATTR_CMPT_CNTR_IDX]);
 	if (xnl_chk_attr(XNL_ATTR_CMPT_DESC_SIZE,
-				info, qconf->qidx, NULL) == 0)
+				info, qconf->qidx, NULL, 0) == 0)
 		qconf->cmpl_desc_sz =
 			nla_get_u32(info->attrs[XNL_ATTR_CMPT_DESC_SIZE]);
 	if (xnl_chk_attr(XNL_ATTR_SW_DESC_SIZE,
-				info, qconf->qidx, NULL) == 0)
+				info, qconf->qidx, NULL, 0) == 0)
 		qconf->sw_desc_sz =
 			nla_get_u32(info->attrs[XNL_ATTR_SW_DESC_SIZE]);
-	if (xnl_chk_attr(XNL_ATTR_CMPT_TRIG_MODE, info, qconf->qidx, NULL) == 0)
+	if (xnl_chk_attr(XNL_ATTR_CMPT_TRIG_MODE, info, qconf->qidx, NULL, 0) == 0)
 		qconf->cmpl_trig_mode =
 			nla_get_u32(info->attrs[XNL_ATTR_CMPT_TRIG_MODE]);
 	else
 		qconf->cmpl_trig_mode = 1;
 	if (xnl_chk_attr(XNL_ATTR_PIPE_GL_MAX,
-			 info, qconf->pipe_gl_max, NULL) == 0)
+			 info, qconf->pipe_gl_max, NULL, 0) == 0)
 		qconf->pipe_gl_max =
 			nla_get_u32(info->attrs[XNL_ATTR_PIPE_GL_MAX]);
 	if (xnl_chk_attr(XNL_ATTR_PIPE_FLOW_ID,
-				info, qconf->pipe_flow_id, NULL) == 0)
+				info, qconf->pipe_flow_id, NULL, 0) == 0)
 		qconf->pipe_flow_id =
 			nla_get_u32(info->attrs[XNL_ATTR_PIPE_FLOW_ID]);
 	if (xnl_chk_attr(XNL_ATTR_PIPE_SLR_ID,
-				info, qconf->pipe_slr_id, NULL) == 0)
+				info, qconf->pipe_slr_id, NULL, 0) == 0)
 		qconf->pipe_slr_id =
 			nla_get_u32(info->attrs[XNL_ATTR_PIPE_SLR_ID]);
 	if (xnl_chk_attr(XNL_ATTR_PIPE_TDEST,
-				info, qconf->pipe_tdest, NULL) == 0)
+				info, qconf->pipe_tdest, NULL, 0) == 0)
 		qconf->pipe_tdest =
 			nla_get_u32(info->attrs[XNL_ATTR_PIPE_TDEST]);
 }
@@ -1128,6 +1127,7 @@ static int xnl_q_add(struct sk_buff *skb2, struct genl_info *info)
 	buf = xnl_mem_alloc(buf_len, info);
 	if (!buf)
 		return -ENOMEM;
+	buf[0] = '\0';
 	cur = buf;
 	end = buf + buf_len;
 
@@ -1143,7 +1143,8 @@ static int xnl_q_add(struct sk_buff *skb2, struct genl_info *info)
 
 	qidx = qconf.qidx;
 
-	rv = xnl_chk_attr(XNL_ATTR_NUM_Q, info, qidx, cur);
+	// Nothing is written to the buffer on success
+	rv = xnl_chk_attr(XNL_ATTR_NUM_Q, info, qidx, cur, cur - end);
 	if (rv < 0)
 		goto send_resp;
 	num_q = nla_get_u32(info->attrs[XNL_ATTR_NUM_Q]);
@@ -1168,6 +1169,7 @@ add_q:
 	cur += snprintf(cur, end - cur, "Added %d Queues.\n", i);
 
 send_resp:
+	// check attr might add to the buffer, add to the buffer.
 	rv2 = xnl_respond_buffer(info, buf, strlen(buf));
 free_buf:
 	kfree(buf);
@@ -1228,7 +1230,7 @@ static int xnl_q_start(struct sk_buff *skb2, struct genl_info *info)
 
 	qidx = qconf.qidx;
 
-	rv = xnl_chk_attr(XNL_ATTR_NUM_Q, info, qidx, buf);
+	rv = xnl_chk_attr(XNL_ATTR_NUM_Q, info, qidx, buf, XNL_RESP_BUFLEN_MIN);
 	if (rv < 0)
 		goto send_resp;
 	num_q = nla_get_u32(info->attrs[XNL_ATTR_NUM_Q]);
