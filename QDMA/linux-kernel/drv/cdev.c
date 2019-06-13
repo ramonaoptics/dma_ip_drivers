@@ -208,13 +208,18 @@ static long cdev_gen_ioctl(struct file *file, unsigned int cmd,
 	case QDMA_CDEV_IOCTL_NO_MEMCPY:
 		get_user(xcdev->no_memcpy, (unsigned char *)arg);
 		return 0;
+	case 0x5401:
+		// Why does python always call this one???
+		// Apparently because of https://bugs.python.org/issue34070
+		pr_info("%s ioctl command %u (TCGETS) NOT supported.\n", xcdev->name, cmd);
+		return -EINVAL;
 	default:
 		break;
 	}
 	if (xcdev->fp_ioctl_extra)
 		return xcdev->fp_ioctl_extra(xcdev, cmd, arg);
 
-	pr_info("%s ioctl NOT supported.\n", xcdev->name);
+	pr_info("%s ioctl command %u NOT supported.\n", xcdev->name, cmd);
 	return -EINVAL;
 }
 
